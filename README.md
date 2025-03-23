@@ -15,10 +15,10 @@ Task list:
     - [x] Cylinders
     - [x] Cones
     - [x] Capsules
-    - [ ] Planes
+    - ~~Planes~~
     - [ ] Convex Hulls
     - [ ] Triangle Meshes
-    - [ ] Compound bodies
+    - [x] Compound bodies
 - [x] Physical Materials (friction, restitution, etc.)
 - [ ] Constraints (All types)
 - [ ] Collision:
