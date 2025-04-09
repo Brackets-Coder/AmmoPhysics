@@ -8,10 +8,10 @@ The goal is to provide feature-complete, advanced, and performant 3D physics in 
 https://github.com/user-attachments/assets/ffaa1071-dea3-4bf6-b804-900e788113a1
 
 ## What I'm working on
-- [x] Convex Hulls
-- [ ] Optimization
-- [ ] Bug fixing
-- [ ] Triangle Mesh Support
+- Raycasting Rewrite
+- Optimization
+- Bug fixing
+- Triangle Mesh Support
 
 ## Task list:
 - [ ] All shape types:
