@@ -131,7 +131,8 @@
     let compoundShapes = {};
     let rays = {};
 
-    let runtime = Scratch.vm.runtime;
+    const vm = Scratch.vm;
+    const runtime = vm.runtime;
 
     //* from delta time extension
     let deltaTime = 0;
@@ -1283,7 +1284,7 @@
 
       // TODO: Meshes
       createMeshOBJ({complexity, name, mass, file}) {
-        const shape = new Ammo[complexity];
+        //const shape = new Ammo[complexity];
       }
     
       createCompoundShape({ name }, { target }) {
@@ -1310,7 +1311,7 @@
         }
       }
 
-      compBodyAddCylinder({ radius, name, x1, y1, z1, x2, y2, z2 }, { target }) {
+      compBodyAddCylinder({ radius, height, name, x1, y1, z1, x2, y2, z2 }, { target }) {
         if (compoundShapes[name]) {
           addCompoundShape(new Ammo.btCylinderShape(new Ammo.btVector3(radius, height / 2, radius)), x1, y1, z1, x2, y2, z2);
         } else {
@@ -1318,7 +1319,7 @@
         }
       }
 
-      compBodyAddCone({ radius, name, x1, y1, z1, x2, y2, z2 }, { target }) {
+      compBodyAddCone({ radius, height, name, x1, y1, z1, x2, y2, z2 }, { target }) {
         if (compoundShapes[name]) {
           addCompoundShape(new Ammo.btConeShape(radius, height), x1, y1, z1, x2, y2, z2);
         } else {
@@ -1326,7 +1327,7 @@
         }
       }
 
-      compBodyAddCapsule({ radius, name, x1, y1, z1, x2, y2, z2 }, { target }) {
+      compBodyAddCapsule({ radius, height, name, x1, y1, z1, x2, y2, z2 }, { target }) {
         if (compoundShapes[name]) {
           addCompoundShape(new Ammo.btCapsuleShape(radius, height + 2 * radius), x1, y1, z1, x2, y2, z2);
         } else {
@@ -1413,14 +1414,14 @@
           bodies[name].getMotionState().getWorldTransform(tempTransform);
           const position = tempTransform.getOrigin();
           const quaternion = eulerToQuaternion(x, y, z);
-        
+          const newPos = new Ammo.btVector3(position.x() + x, position.y() + y, position.z() + z);
+          const newQuaternion = tempTransform.getRotation();
+
           switch (transform) {
             case "position":
-              const newPos = new Ammo.btVector3(position.x() + x, position.y() + y, position.z() + z);
               tempTransform.setOrigin(newPos);
               break;
             case "rotation":
-              const newQuaternion = tempTransform.getRotation();
               newQuaternion.op_add(new Ammo.btQuaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w));
               tempTransform.setRotation(newQuaternion);
               break;
@@ -1511,7 +1512,7 @@
         const from = new Ammo.btVector3(x, y, z);
         const dir = new Ammo.btVector3(x2 - x, y2 - y, z2 - z);
         dir.normalize();
-        dir.op_mul(Cast.toNumber(distance));
+        dir.op_mul(distance);
         const to = new Ammo.btVector3(from.x() + dir.x(), from.y() + dir.y(), from.z() + dir.z());
       
         const rayCallback = new Ammo.AllHitsRayResultCallback(from, to);
@@ -1538,7 +1539,7 @@
         }
       }
 
-      getRayTouching({ name, body }) {
+      getRayTouching({ name, body }, { target }) {
         if (rays[name]) {
           if (bodies[body]) {
             return bodies[body]?.includes(Ammo.castObject(rays[name]?.get_m_collisionObject(), Ammo.btRigidBody).userData);
@@ -1550,7 +1551,7 @@
         }
       }
 
-      deleteRay({ name }) {
+      deleteRay({ name }, { target }) {
         if (rays[name]) {
           delete rays[name];
         } else {
