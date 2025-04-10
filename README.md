@@ -7,8 +7,13 @@ The goal is to provide feature-complete, advanced, and performant 3D physics in 
 
 https://github.com/user-attachments/assets/ffaa1071-dea3-4bf6-b804-900e788113a1
 
-Task list:
+## What I'm working on
+- Raycasting Rewrite
+- Optimization
+- Bug fixing
+- Triangle Mesh Support
 
+## Task list:
 - [ ] All shape types:
     - [x] Boxes
     - [x] Spheres
@@ -16,7 +21,7 @@ Task list:
     - [x] Cones
     - [x] Capsules
     - ~~Planes~~
-    - [ ] Convex Hulls
+    - [x] Convex Hulls
     - [ ] Triangle Meshes
     - [x] Compound bodies
 - [x] Physical Materials (friction, restitution, etc.)
