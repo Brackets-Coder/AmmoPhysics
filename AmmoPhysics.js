@@ -1,5 +1,5 @@
 // Name: Ammo Physics
-// ID: ammophysics
+// ID: masterMathAmmoPhysics
 // Description: Advanced three dimentional rigid body physics.
 // By: -MasterMath- <https://scratch.mit.edu/users/-MasterMath-/>
 // License: MPL-2.0 and MIT
@@ -121,6 +121,7 @@
 
     let collisionConfig = new Ammo.btDefaultCollisionConfiguration();
     let dispatcher = new Ammo.btCollisionDispatcher(collisionConfig);
+    Ammo.btGImpactCollisionAlgorithm.prototype.registerAlgorithm(dispatcher);
     let broadphase = new Ammo.btDbvtBroadphase();
     let solver = new Ammo.btSequentialImpulseConstraintSolver();
     let world = new Ammo.btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfig);
@@ -180,6 +181,7 @@
     const meshIcon = "data:image/svg+xml;base64,PHN2ZyBoZWlnaHQ9IjE2MDAiIHZpZXdCb3g9IjAgMCAxODAwIDE2MDAiIHdpZHRoPSIxODAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOmlua3NjYXBlPSJodHRwOi8vd3d3Lmlua3NjYXBlLm9yZy9uYW1lc3BhY2VzL2lua3NjYXBlIiB4bWxuczpzb2RpcG9kaT0iaHR0cDovL3NvZGlwb2RpLnNvdXJjZWZvcmdlLm5ldC9EVEQvc29kaXBvZGktMC5kdGQiPjxzb2RpcG9kaTpuYW1lZHZpZXcgcGFnZWNvbG9yPSIjMzAzMDMwIiBzaG93Z3JpZD0idHJ1ZSI+PGlua3NjYXBlOmdyaWQgaWQ9ImdyaWQ1IiB1bml0cz0icHgiIHNwYWNpbmd4PSIxMDAiIHNwYWNpbmd5PSIxMDAiIGNvbG9yPSIjNDc3MmIzIiBvcGFjaXR5PSIwLjIiIHZpc2libGU9InRydWUiIC8+PC9zb2RpcG9kaTpuYW1lZHZpZXc+PGcgZmlsbD0iI2ZmZiI+PGcgZW5hYmxlLWJhY2tncm91bmQ9Im5ldyIgdHJhbnNmb3JtPSJtYXRyaXgoMTAwIDAgMCAxMDAgLTEzMDAwIC0zODc5OS45OTk5KSI+PHBhdGggZD0ibTEzNS41IDM4OWEuNTAwMDQ5OTcuNTAwMDQ5OTcgMCAwIDAgLS4zMzAwOC4xMjMwNWwtMiAxLjc1YS41MDAwNDk5Ny41MDAwNDk5NyAwIDAgMCAtLjE2OTkyLjM3Njk1djEuNzVoLTEuNWEuNTAwMDQ5OTcuNTAwMDQ5OTcgMCAwIDAgLS41LjV2MS41YzAgLjk4NjExLjc0MDU0IDEuNjg4OSAxLjU2ODM2IDEuOTE5OTIuNzE1MjUuMTk5NjEgMS41MTQyMS4wNDgyIDIuMTgzNTktLjM4NDc2bDEuMjQ4MDUgMS40MDQyOXYyLjMxMDU1YzAgLjg4ODg5LjM5NDE5IDEuNjE4NDguOTY4NzUgMi4wNzgxMi41NzQ1Ni40NTk2NSAxLjMwNjI1LjY3MTg4IDIuMDMxMjUuNjcxODhzMS40NTY2OS0uMjEyMjMgMi4wMzEyNS0uNjcxODhjLjU3NDU2LS40NTk2NC45Njg3NS0xLjE4OTIzLjk2ODc1LTIuMDc4MTJ2LTIuMzEwNTVsMS4yNDgwNS0xLjQwNDI5Yy42NjkzOC40MzI5OCAxLjQ2ODM0LjU4NDM3IDIuMTgzNTkuMzg0NzYuODI3ODItLjIzMTAyIDEuNTY4MzYtLjkzMzgxIDEuNTY4MzYtMS45MTk5MnYtMS41YS41MDAwNDk5Ny41MDAwNDk5NyAwIDAgMCAtLjUtLjVoLTEuNXYtMS43NWEuNTAwMDQ5OTcuNTAwMDQ5OTcgMCAwIDAgLS4xNjk5Mi0uMzc2OTVsLTItMS43NWEuNTAwMDQ5OTcuNTAwMDQ5OTcgMCAwIDAgLS4zMzAwOC0uMTIzMDVoLTJhLjUwMDA0OTk3LjUwMDA0OTk3IDAgMCAwIC0uMzUzNTIuMTQ2NDhsLS44NTM1MS44NTM1MmgtLjU4NTk0bC0uODUzNTEtLjg1MzUyYS41MDAwNDk5Ny41MDAwNDk5NyAwIDAgMCAtLjM1MzUyLS4xNDY0OHptLjE4NzUgMWgxLjYwNTQ3bC44NTM1MS44NTM1MmEuNTAwMDQ5OTcuNTAwMDQ5OTcgMCAwIDAgLjM1MzUyLjE0NjQ4aDFhLjUwMDA0OTk3LjUwMDA0OTk3IDAgMCAwIC4zNTM1Mi0uMTQ2NDhsLjg1MzUxLS44NTM1MmgxLjYwNTQ3bDEuNjg3NSAxLjQ3ODUydjIuMDIxNDhhLjUwMDA0OTk3LjUwMDA0OTk3IDAgMCAwIC41LjVoMS41djFjMCAuNTEzODktLjMyMTk2LjgxMTEtLjgzNzg5Ljk1NTA4LS4zOTQwOC4xMDk5Ny0uODIxMi0uMDYyOS0xLjIwNzAzLS4yNWEuNTAwMDQ5OTcuNTAwMDQ5OTcgMCAwIDAgLS44MjgxMy0uNTM3MTFsLTIgMi4yNWEuNTAwMDQ5OTcuNTAwMDQ5OTcgMCAwIDAgLS4xMjY5NS4zMzIwM3YyLjVjMCAuNjExMTEtLjIzMDgxIDEuMDA2NTItLjU5Mzc1IDEuMjk2ODgtLjM2Mjk0LjI5MDM1LS44ODEyNS40NTMxMi0xLjQwNjI1LjQ1MzEycy0xLjA0MzMxLS4xNjI3Ny0xLjQwNjI1LS40NTMxMmMtLjM2Mjk0LS4yOTAzNi0uNTkzNzUtLjY4NTc3LS41OTM3NS0xLjI5Njg4di0yLjVhLjUwMDA0OTk3LjUwMDA0OTk3IDAgMCAwIC0uMTI2OTUtLjMzMjAzbC0yLTIuMjVhLjUwMDA0OTk3LjUwMDA0OTk3IDAgMCAwIC0uODI4MTMuNTM3MTFjLS4zODU4My4xODcwNy0uODEyOTUuMzU5OTctMS4yMDcwMy4yNS0uNTE1OTMtLjE0Mzk4LS44Mzc4OS0uNDQxMTktLjgzNzg5LS45NTUwOHYtMWgxLjVhLjUwMDA0OTk3LjUwMDA0OTk3IDAgMCAwIC41LS41di0yLjAyMzQ0eiIvPjxwYXRoIGQ9Im0xMzcgMzkyYS41MDAwNS41MDAwNSAwIDAgMCAtLjM1MzUyLjE0NjQ4bC0uNS41YS41MDAwNS41MDAwNSAwIDAgMCAtLjE0NjQ4LjM1MzUydi41YS41MDAwNS41MDAwNSAwIDEgMCAxIDB2LS4yOTI5N2wuMjA3MDMtLjIwNzAzaC4yOTI5N2EuNTAwMDUuNTAwMDUgMCAxIDAgMC0xem00IDBhLjUwMDA1LjUwMDA1IDAgMCAwIC0uMzUzNTIuMTQ2NDhsLS41LjVhLjUwMDA1LjUwMDA1IDAgMCAwIC0uMTQ2NDguMzUzNTJ2LjVhLjUwMDA1LjUwMDA1IDAgMSAwIDEgMHYtLjI5Mjk3bC4yMDcwMy0uMjA3MDNoLjI5Mjk3YS41MDAwNS41MDAwNSAwIDEgMCAwLTF6bS0yLjUgM2EuNTAwMDUuNTAwMDUgMCAxIDAgMCAxaDFhLjUwMDA1LjUwMDA1IDAgMSAwIDAtMXoiIG9wYWNpdHk9Ii44Ii8+PC9nPjwvZz48L3N2Zz4=";
     // compound icon made by me, combining Blender's icons
     const compoundIcon = "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHdpZHRoPSIxMzQ4Ljg4NzA5IiBoZWlnaHQ9IjEyMTMuNzc3NDIiIHZpZXdCb3g9IjAsMCwxMzQ4Ljg4NzA5LDEyMTMuNzc3NDIiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDQ2Ny42ODk1Miw0MTUuNDAyMzIpIj48ZyBmaWxsPSIjZmZmZmZmIiBzdHJva2U9Im5vbmUiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCI+PHBhdGggZD0iTTg0MC41NDkzNiwtNDEzLjk5MzIyYzIyLjQ0ODQ2LDAuMDAyMjUgNDAuNjQ2LDE4LjE5OTc1IDQwLjY0ODIxLDQwLjY0ODIxdjgxMi45NjQ1NWMtMC4wMDE5LDEwLjc3OTk0IC00LjI4NTMyLDIxLjExNzc1IC0xMS45MDgyOSwyOC43Mzk5MmwtNDcuOTE2MDYsNDcuOTE2MDZjLTAuNzM5MDksLTguMDAwNDEgLTIuNTAzMTYsLTE1Ljk3MjggLTMuMjAzNTIsLTIzLjk4NTg5Yy0xLjc5NTYsLTIwLjU0MzY4IC0yLjUxMTI0LC02Mi43NzIyIC0xOC4yNjg1NiwtODUuNjg3MjN2LTY4Mi4yOTY2bC0xNjIuNTkyOTIsMTYyLjkxMDgxdjMzNy4xOTU3MWMtNC44ODQ0MiwtNC4yNDk0NCAtMTEuMDgyODYsLTcuMDI3NDggLTE3LjkwNSwtNy42NDM2N2MtMS4wMDE4LC0wLjAyOTczIC0xLjk3NTI0LC0wLjA2MjY5IC0yLjg4NzgyLC0wLjEyOTc5Yy0xMS45MTUxNywtMC44NzYzMyAtMjMuODk5NTksMC4zNDEyMSAtMzUuODQyMDQsMGMtOC42NzA5NSwtMC4yNDc3NSAtMTYuODUwODQsLTEuNzE5OTggLTI0LjY2MTYsLTIuNDQ4Njh2LTMwMi45OTc1OWgtNzMxLjY2ODA5djI3OC4xNjk0N2MtOS45NDA4OCwzLjk4Njg5IC0xNy4zOTI3NCwxMi44NjQ5MyAtMTkuMzc4MDUsMjMuNjU2NTljLTAuMzQ0MjYsMS44NzEyOCAtMC41MjQxNSwzLjgwMDA5IC0wLjUyNDE1LDUuNzcwOTJjLTIuMjA0OTUsMTEuMzE5OTYgLTcuNzkxOTMsMjAuNzI5MjggLTE0LjM3NjMzLDMwLjM3MTk1Yy0xMi4xNDIyNSwxNy43ODE5NyAtMzIuNjEyOTQsMjYuODkzNzEgLTQ3LjAxNzg5LDQxLjY0NTJ2LTQyMC4yNjI0MmMwLjAwMTksLTEwLjc3OTk0IDQuMjg1MzIsLTIxLjExNzc1IDExLjkwODI5LC0yOC43Mzk5MmwyNDMuODg5MzUsLTI0My44ODkzNWM3LjYyMjE4LC03LjYyMjk3IDE3Ljk1OTk5LC0xMS45MDY0MiAyOC43Mzk5MiwtMTEuOTA4Mjl6TS0xMTguMTc3MzEsLTE3MC4xMDM4N2g2OTguMDA2NDdsMTYyLjExNjUxLC0xNjIuNTkyOTJoLTY5Ny41MzAwOXoiLz48cGF0aCBkPSJNMTAzLjc2NjQ2LDcyNC4xNTcxMWM0LjY3ODE2LC0zLjIxMDY5IDkuMTE1MjksLTYuNDY2ODUgMTMuMjUwNDUsLTkuNjk5NzZjOS44NDI4OCwtNy42OTUzIDE0LjM5ODk5LC0yMS41MjQzMSAyMy4wODAwMiwtMzAuMzYwOTJjMTEuMDMwMDksLTExLjIyNzczIDI3LjE0NDk4LC0yNC45Njg2NCAzMi41Nzk0MSwtNDEuMjM1NzVoMTY4Ljg5MTQ4YzMuOTYxMjgsNi41ODg0OSA5LjE5NDgxLDEyLjM3NDA2IDEzLjUxMDk3LDE4LjMwMTcxYzE5LjgxNDc5LDI3LjIxMzAyIDQ2LjE1NDcyLDQ4Ljg3MzQ5IDc2LjQ4MTE5LDYyLjk5NDcyeiIvPjxwYXRoIGQ9IiIvPjxwYXRoIGQ9IiIvPjxwYXRoIGQ9IiIvPjxwYXRoIGQ9Ik01Ni44NTA3NSwtNDAzLjQ5NTYxYzcuNzc5NzMsNy43Nzk3MyAxMi4wNzM4OSwxOC4zODA1MyAxMS45MDE3OSwyOS4zODEzNHY3NzIuMzE2MzRoMjM2LjY4Nzc1Yy0wLjMxMTgsMS4zMDg2NiAtMC41NDI0NCwyLjY0ODc2IC0wLjY4NjI5LDQuMDE0NzVjLTEuMDQ0ODQsMy4zOTk0NSAtMy43MzIwMSw2LjA1NTEyIC01LjYxNjg5LDkuMDcwOTVjLTEzLjMzOTEsMjEuMzQyNTggLTE4LjEzMzU0LDQzLjI0MzYzIC0xNi45MTYxOSw2OC4yMTA3NWgtMTU3LjQ4NTk1Yy0xLjY0MTI1LC03LjA3MjA0IC03Ljg2NDIyLC0xMy41NTM5MiAtMTAuMzg3MzgsLTE5LjY0NTM2Yy05LjQxNzgxLC0yMi43MzY2MiAtMzIuMzg0NSwtNDQuMjA5ODEgLTQ4LjI5Njc2LC02MS40Mjk5NWMtNy45NzA5NywtOC42MjYxNCAtMjMuMjkzODksLTE4LjM2MTk2IC0zMC4xNDI3MSwtMjguMzk1MjNjLTQuMjg5NTQsLTYuMjg0MDEgLTguNDY1MzUsLTE2LjIwNjYgLTEzLjAxNzg1LC0yMS41MTc4NWMtMy41MzQyOCwtNC4xMjMzMyAtOC44NzgyNiwtNy44NjM4MSAtMTEuMjY0MjgsLTEyLjUxNTQ0Yy0wLjA4MjAyLC0wLjE1OTg5IC0wLjE1OTU4LC0wLjMyMjk5IC0wLjIzMjk4LC0wLjQ4OTA2YzAuMTUzODEsLTEuMjY1OTcgMC4yMzI5OCwtMi41NTQ5NSAwLjIzMjk4LC0zLjg2MjRjMCwtNC42MzE5OCAtMC45OTM2NiwtOS4wMzE5MSAtMi43Nzk0NiwtMTIuOTk4MmMtMC4yOTQ3MiwtMC45OTUyNyAtMC42Nzc1OCwtMS45NTE0NCAtMS4xODIyMywtMi44NDg1OWMtMC42OTA3LC0xLjIyNzkgLTEuNTIyMzcsLTIuMzE1ODUgLTIuNDY2OTYsLTMuMjkxNTdjLTQuMzMyOTIsLTUuNzExMDkgLTEwLjU1Nzg2LC05LjkwNzkyIC0xNy43NDEyMSwtMTEuNjU2OHYtNjc0Ljk2MjI5Yy0wLjE2ODY0LC0xMC43ODA2NiAzLjk1MjM4LC0yMS4xODY3MSAxMS40NTYzNywtMjguOTI4ODVjNy41MDM5OSwtNy43NDIxNCAxNy43NzYyOSwtMTIuMTg2MTUgMjguNTU2OTMsLTEyLjM1NDI4YzExLjAwMDg0LC0wLjE3MjA2IDIxLjYwMTY0LDQuMTIyMSAyOS4zODEzNCwxMS45MDE3OXoiIG9wYWNpdHk9IjAuNSIvPjxwYXRoIGQ9IiIgb3BhY2l0eT0iMC41Ii8+PHBhdGggZD0iTTExMC4yODc1MSw0OTkuNDM2MWMzMC43ODQzMiwxMy40NzA3NSA1Ni40NzcxOSwyOS4zODY3IDc1LjU5NTU1LDQ4LjEzMjU5YzE5LjExODg2LDE4Ljc0NTg2IDMyLjM0Mzc3LDQxLjU1ODkzIDMyLjM0Mzc3LDY3LjA3OTQ4YzAuMTI0OTQsOC44MzQ0OSAtNC41MTY2MiwxNy4wNTE4NyAtMTIuMTQ3MzYsMjEuNTA1NTVjLTcuNjMwNzQsNC40NTM3MSAtMTcuMDY4MzgsNC40NTM3MSAtMjQuNjk5MTIsMGMtNy42MzA3NCwtNC40NTM3MSAtMTIuMjcyMzIsLTEyLjY3MTA5IC0xMi4xNDczNiwtMjEuNTA1NTVjMCwtOC4zMTYzIC00LjU5MTE5LC0xOS4yOTU5NCAtMTcuNzAyOTUsLTMyLjE1MjIxYy0xMy4xMTE3MywtMTIuODU2MjggLTM0LjAxMzk5LC0yNi40MzM3NCAtNjAuODU5NjgsLTM4LjE4MDc0Yy01My42OTA4OCwtMjMuNDk0IC0xMzAuNTczNTQsLTM5LjkwMzE5IC0yMTUuNDAwNDcsLTM5LjkwMzE5Yy04NC44MjY5NywwIC0xNjEuNzA5NTksMTYuNDA5MTkgLTIxNS40MDA0NywzOS45MDMxOWMtMjYuODQ1NjksMTEuNzQ3MDMgLTQ3Ljc0NzkyLDI1LjMyNDQ3IC02MC44NTk2OCwzOC4xODA3NGMtMTMuMTEyMiwxMi44NTYyOCAtMTcuNzAyOTUsMjMuODM1OTEgLTE3LjcwMjk1LDMyLjE1MjIxYzAuMTI0OTQsOC44MzQ0OSAtNC41MTY2MiwxNy4wNTE4NyAtMTIuMTQ3MzYsMjEuNTA1NTVjLTcuNjMwNzQsNC40NTM3MSAtMTcuMDY4MzgsNC40NTM3MSAtMjQuNjk5MTIsMGMtNy42MzA3NCwtNC40NTM3MSAtMTIuMjcyMjksLTEyLjY3MTA5IC0xMi4xNDczNiwtMjEuNTA1NTVjMCwtMjUuNTIwNTUgMTMuMjI0OTEsLTQ4LjMzMzYyIDMyLjM0Mzc3LC02Ny4wNzk0OGMxOS4xMTgzOSwtMTguNzQ1ODYgNDQuODExMjYsLTM0LjY2MTg0IDc1LjU5NTU1LC00OC4xMzI1OWM2MS41Njk1OSwtMjYuOTQxNjMgMTQzLjk2NjQ4LC00NC4wMTc5NCAyMzUuMDE3NjIsLTQ0LjAxNzk0YzkxLjA1MTE0LDAgMTczLjQ0ODA0LDE3LjA3NjMxIDIzNS4wMTc2Miw0NC4wMTc5NHoiIG9wYWNpdHk9IjAuNSIvPjxwYXRoIGQ9Ik0tMTAwLjIzMzE3LDExMi40NjEyMmM4LjEzOTEsMC4wMTA1OSAxNS43NDE2LDQuMDYyNTUgMjAuMjg4MzYsMTAuODEzMjVsMjgxLjcxNDYyLDQxNi40NDc3MmMwLjQxMSwwLjYyMDE1IDAuNzkzNTgsMS4yNTg3NCAxLjE0NjQ1LDEuOTEzNjljMTAuNTY3OTcsMTkuMjU2NTEgMTUuMzEwNTYsNDAuMTk4NzQgMTUuMzEwNTYsNjAuNzYzODRjMCw1OS42NDYyMyAtNDMuOTExNywxMDkuMzY5NDYgLTEwNi4xMjE2NiwxNDIuODY2ODRjLTYyLjIwOTQ1LDMzLjQ5NzM4IC0xNDUuMzMxOTQsNTMuMTA4NTQgLTIzNi44MzUyOCw1My4xMDg1NGMtOTEuNTAzMzUsMCAtMTc0LjYyNTg2LC0xOS42MTExNiAtMjM2LjgzNTI4LC01My4xMDg1NGMtNjIuMjA5OTIsLTMzLjQ5NzM4IC0xMDYuMTIxNjYsLTgzLjIyMDYxIC0xMDYuMTIxNjYsLTE0Mi44NjY4NGMwLC0yMC41ODMyIDQuODAwNDQsLTQxLjUyODg1IDE1LjIxNDUzLC02MC42Njc5N2MwLjM4MjIyLC0wLjY4OTU2IDAuNzk3NTQsLTEuMzYwMjIgMS4yNDQ0NSwtMi4wMDk3MmwyODEuNzE0NjIsLTQxNi40NDc3MmM0LjU0NjQxLC02Ljc1MDA3IDEyLjE0ODAyLC0xMC44MDE5IDIwLjI4NjM5LC0xMC44MTMwOXpNLTQwOS41MDY4OCw1NjUuMzY3MjZjLTYuMTYzNDIsMTEuNDM5OTUgLTkuMTg2MzUsMjQuMTYyNDggLTkuMTg2MzUsMzcuMDMyNDVjMCwzNS4wNTg4NiAyNy4zMjk3NSw3MS4xNDQ1NyA4MC4zODAzLDk5LjcxMDExYzUzLjA1MTA1LDI4LjU2NTU4IDEyOS4yMDgwNSw0Ny4yNzE0MSAyMTMuNTgyODIsNDcuMjcxNDFjODQuMzc0NzYsMCAxNjAuNTMxNzksLTE4LjcwNTg3IDIxMy41ODI4MiwtNDcuMjcxNDFjNTMuMDUwNTQsLTI4LjU2NTU4IDgwLjM4MDMsLTY0LjY1MTI1IDgwLjM4MDMsLTk5LjcxMDExYzAsLTEzLjE0ODA1IC0yLjg0NTA3LC0yNS4zMTcwOCAtOS4wOTA4MywtMzYuODQxMDZsLTI3My4zODkxLC00MDQuMTAzNThoLTIyLjk2NjM3eiIvPjxwYXRoIGQ9Ik03NTAuODQwODUsMzkyLjQyMzAyYzI1LjM3NTg0LDkuNzYwMiA0Ni42NjgzOCwyMS40NDAwNCA2Mi42NzIwMiwzNS45OTMyMmMxNi4wMDM2NCwxNC41NTMxOCAyNy4yMzE2MywzMy4yNTY4MyAyNy4yMzE2Myw1NC4zMDUyM2MwLjEwMzA0LDcuMjg3MjQgLTMuNzI1NTgsMTQuMDY1NDUgLTEwLjAxOTg5LDE3LjczOTE1Yy02LjI5NDMxLDMuNjczNyAtMTQuMDc5MDgsMy42NzM3IC0yMC4zNzM0MiwwYy02LjI5NDMxLC0zLjY3MzcgLTEwLjEyMjk2LC0xMC40NTE5MSAtMTAuMDE5OTIsLTE3LjczOTE1YzAsLTYuODUyMDYgLTMuNDY3ODUsLTE0Ljc2NzM3IC0xNC4wNTAwOCwtMjQuMzkwMTdjLTEwLjU4MTc5LC05LjYyMjM5IC0yNy44MDIyNywtMTkuNjU0NTggLTQ5Ljk2MzY1LC0yOC4xNzg1Yy00NC4zMjM1OSwtMTcuMDQ3OTEgLTEwOC4wMjYxNiwtMjguMjU3NzQgLTE3OC40NjU1NywtMjguMjU3NzRjLTcwLjQzOTQyLDAgLTEzNC4xNDE5NSwxMS4yMDk4MyAtMTc4LjQ2NTU0LDI4LjI1Nzc0Yy0yMi4xNjEzOCw4LjUyMzk2IC0zOS4zODE4NywxOC41NTYxMSAtNDkuOTYzNjksMjguMTc4NWMtMTAuNTgyNTgsOS42MjI4IC0xNC4wNTAwOCwxNy41MzgxMiAtMTQuMDUwMDgsMjQuMzkwMTdjMC4xMDMwNCw3LjI4NzI0IC0zLjcyNTYxLDE0LjA2NTQ1IC0xMC4wMTk5MiwxNy43MzkxNWMtNi4yOTQzMSwzLjY3MzcgLTE0LjA3OTExLDMuNjczNyAtMjAuMzczNDIsMGMtNi4yOTQzMSwtMy42NzM3IC0xMC4xMjI5NiwtMTAuNDUxOTEgLTEwLjAxOTkyLC0xNy43MzkxNWMwLC0yMS4wNDg0MyAxMS4yMjgwMiwtMzkuNzUyMDUgMjcuMjMxNjMsLTU0LjMwNTIzYzE2LjAwMzY0LC0xNC41NTMxOCAzNy4yOTYxOCwtMjYuMjMzMDMgNjIuNjcyMDIsLTM1Ljk5MzIyYzUwLjc1MTc1LC0xOS41MTk5OCAxMTguMzQ4ODgsLTMwLjk0MTE3IDE5Mi45ODg4NywtMzAuOTQxMTdjNzQuNjM5OTksMCAxNDIuMjM3MTIsMTEuNDIxMTYgMTkyLjk4ODg3LDMwLjk0MTE3eiIgb3BhY2l0eT0iMC41Ii8+PHBhdGggZD0iTTU2MC4zNzIyMiwxOTkuOTc2OTRjMTU0LjAwMjYzLDEuMzY5MTkgMjc4Ljg4MzEyLDEyNi4yNzQ3MiAyODAuMjA4NjQsMjgwLjI4NzQ2YzAuMDI4MzMsMC4xMzQ0NCAwLjA1NTI3LDAuMjY5MTcgMC4wODA4NSwwLjQwNDEyYzAsMC42OTEwOCAwLjA4MDgyLDEuMzYxOSAwLjA4MDgyLDIuMDUyOThjMCwxNTUuMTczODEgLTEyNS41ODE2NCwyODEuNDAwNDQgLTI4MC40MzUzNywyODIuNzMwODRjLTAuMTM0NDQsMC4wMjgzMyAtMC4yNjkxNCwwLjA1NTI3IC0wLjQwNDEyLDAuMDgwODVjLTAuNjkxMDgsMCAtMS4zNjE5NCwwLjA4MDg1IC0yLjA1MzAxLDAuMDgwODVjLTE1NS45OTk4NywwLjAwMDQxIC0yODIuODkyNDgsLTEyNi44OTI2OCAtMjgyLjg5MjQ4LC0yODIuODkyNTFjLTAuMDAzNDksLTAuODcwNzIgMC4wNDkyOCwtMS43NDA3MSAwLjE1Nzk5LC0yLjYwNDYxYzEuNDE5MywtMTU0Ljc5MTExIDEyNy42MTQwMiwtMjgwLjI4ODI4IDI4Mi43MzQ0OSwtMjgwLjI4Nzg3YzAuODQyOTksLTAuMDAzMzYgMS42ODUzNywwLjA0NjA1IDIuNTIyMjEsMC4xNDc5MXpNNTMzLjQ1OTg4LDI1NC4yOTIyOGMtOS42MjIzOSwxMC41ODE4MiAtMTkuNjU0NTgsMjcuODAyMjcgLTI4LjE3ODU0LDQ5Ljk2MzY5Yy0xNy4wNDc5MSw0NC4zMjM1OSAtMjguMjU3NzQsMTA4LjAyNjEzIC0yOC4yNTc3NCwxNzguNDY1NTRjMCwyNi42NDgwNSAyLjA1NTAxLDUxLjgxODI0IDQuOTcyODUsNzUuODUzNmMyNC4wMzUzNiwyLjkxNTg0IDQ5LjIwNTUxLDQuOTcyODUgNzUuODUzNTcsNC45NzI4NWM3MC40Mzk0MiwwIDEzNC4xNDE5OCwtMTEuMjA5ODMgMTc4LjQ2NTU3LC0yOC4yNTc3NGMyMi4xNjEzOCwtOC41MjM5NiAzOS4zODE4NywtMTguNTU2MTEgNDkuOTYzNjksLTI4LjE3ODVjMTAuNTgyNjEsLTkuNjIyOCAxNC4wNTAwNSwtMTcuNTM4MTUgMTQuMDUwMDUsLTI0LjM5MDJjMCwtMTM0LjE1ODk0IC0xMDguMzIwMzcsLTI0Mi40NzkyNyAtMjQyLjQ3OTMxLC0yNDIuNDc5MjdjLTYuODUyMDYsMCAtMTQuNzY3MzcsMy40Njc4NSAtMjQuMzkwMTcsMTQuMDUwMDV6TTMxNS4zNzA3Nyw0ODIuNzIxNTFjMCw2Ljg1MjA2IDMuNDY3ODUsMTQuNzY3NCAxNC4wNDgwNSwyNC4zOTAyYzEwLjU4MTgyLDkuNjIyMzkgMjcuODAyMjcsMTkuNjU0NTggNDkuOTYzNjksMjguMTc4NWMxNy4zODgxNyw2LjY4ODAxIDM4LjQyNDg4LDEyLjA4Nzk5IDYxLjAxNDY3LDE2LjY1NDY5Yy0yLjI1NTA2LC0yMi4yNTE1MiAtMy43ODY3MiwtNDUuMTgzMTkgLTMuNzg2NzIsLTY5LjIyMzRjMCwtNzQuNjM5OTkgMTEuNDIxMTksLTE0Mi4yMzcxMiAzMC45NDEyLC0xOTIuOTg4ODRjNS41NzU4MiwtMTQuNDk2MjMgMTIuMDE2NDYsLTI3LjIyODQzIDE5LjAyMjksLTM4LjgzNDY4Yy05OS4yNTQ0NSwzMC4zNTg4IC0xNzEuMjAzNzIsMTIyLjQ3ODcxIC0xNzEuMjAzNzIsMjMxLjgyMzU1ek00ODYuNTc0NDYsNzE0LjU0NTA1Yy03LjAwNjQ0LC0xMS42MDYyNSAtMTMuNDQ3MDgsLTI0LjMzODQ1IC0xOS4wMjI5LC0zOC44MzQ2OGMtOS4wOTYyMSwtMjMuNjUxNDMgLTE2LjIyNjczLC01MS4yNDUxOCAtMjEuNDY5MTMsLTgxLjIyMTI4Yy0yOS45NzY1MSwtNS4yNDIwMiAtNTcuNTY5ODMsLTEyLjM3MjU0IC04MS4yMjEyNSwtMjEuNDY5MWMtMTQuNDk2MjMsLTUuNTc1ODIgLTI3LjIyODQzLC0xMi4wMTY0NiAtMzguODM0NjgsLTE5LjAyMjkzYzIzLjQ2OTU3LDc2LjczMDE1IDgzLjgxODIyLDEzNy4wNzg0MiAxNjAuNTQ3OTYsMTYwLjU0Nzk5ek03ODkuNjczNTksNTUzLjk5NTA3Yy0xMS42MDYyOCw3LjAwNjQ0IC0yNC4zMzg0NSwxMy40NDcwOCAtMzguODM0NjgsMTkuMDIyOWMtNTAuNzUxNzUsMTkuNTE5NTcgLTExOC4zNDg4OCwzMC45NDExNyAtMTkyLjk4ODg3LDMwLjk0MTE3Yy0yNC4wNDAyMSwwIC00Ni45NzE4OCwtMS41Mjc2IC02OS4yMjMzNiwtMy43ODY3MmM0LjU2NjcsMjIuNTg5NzUgOS45NjY3MSw0My42MjY0OSAxNi42NTQ2OSw2MS4wMTQ2N2M4LjUyMzk2LDIyLjE2MTM4IDE4LjU1NjE0LDM5LjM4MTg3IDI4LjE3ODU0LDQ5Ljk2MzY5YzkuNjIyOCwxMC41ODI2MSAxNy41MzgxMiwxNC4wNTAwNSAyNC4zOTAxNywxNC4wNTAwNWMxMDkuMzQ0NDIsMCAyMDEuNDY0MzMsLTcxLjk0OTI3IDIzMS44MjM1NSwtMTcxLjIwMzcyeiIvPjwvZz48L2c+PC9zdmc+PCEtLXJvdGF0aW9uQ2VudGVyOjcwNy42ODk1MTY5NjIzNDM0OjU5NS40MDIzMjIzNjY5Njg1LS0+";
+    
     //TODO: Raycast Icon
     // TODO: Add triangle mesh support + heightfield support
     ///// TODO: Add player support/management??
@@ -188,17 +190,21 @@
     // TODO: Make it so that creating already exisitng bodies replaces the existing body with the new one instead of throwing an error
     // TODO: Scratch.Cast()
 
-    //https://fontawesome.com/icons/link?f=classic&s=solid
+    // TODO FOR V2.0.0: debug wireframe render layer at top of Scratch Canvas.
+
+    //* NOTE TO SELF: @s_federici <https://scratch.mit.edu/users/s_federici> wants to know when this is finished.
+
+    //https://fontawesome.com/icons/link?f=classic&s=solid CONSTRAINT ICON
 
     class AmmoPhysics {
       getInfo() {
         return {
-          id: "ammophysics",
+          id: "masterMathAmmoPhysics",
           name: Scratch.translate("Ammo Physics"),
           blocks: [
             {
               blockType: "label",
-              text: Scratch.translate("Simulation"),
+              text: Scratch.translate("Simulation Control"),
             },
             {
               opcode: "step",
@@ -388,7 +394,7 @@
               arguments: {
                 type: {
                   type: Scratch.ArgumentType.STRING, 
-                  menu: "staticDynamic",
+                  menu: "meshMenu",
                 },
                 name: {
                   type: Scratch.ArgumentType.STRING,
@@ -448,7 +454,7 @@
             {
               opcode: "compBodyAddBox",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate("[IMAGE] add box shape with size: [x] [y] [z] to compound body [name] at x: [x1] y: [y1] z: [z1] with rotation x: [x2] y: [y2] z: [z2]"),
+              text: Scratch.translate("[IMAGE] add box shape with size: [x] [y] [z] to compound shape [name] at x: [x1] y: [y1] z: [z1] with rotation x: [x2] y: [y2] z: [z2]"),
               blockIconURI: compoundIcon,
               arguments: {
                 IMAGE: {
@@ -500,7 +506,7 @@
             {
               opcode: "compBodyAddSphere",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate("[IMAGE] add sphere shape with radius: [radius] to compound body [name] at x: [x1] y: [y1] z: [z1] with rotation x: [x2] y: [y2] z: [z2]"),
+              text: Scratch.translate("[IMAGE] add sphere shape with radius: [radius] to compound shape [name] at x: [x1] y: [y1] z: [z1] with rotation x: [x2] y: [y2] z: [z2]"),
               blockIconURI: compoundIcon,
               arguments: {
                 IMAGE: {
@@ -544,7 +550,7 @@
             {
               opcode: "compBodyAddCylinder",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate("[IMAGE] add cylinder shape with radius: [radius] and height: [height] to compound body [name] at x: [x1] y: [y1] z: [z1] with rotation x: [x2] y: [y2] z: [z2]"),
+              text: Scratch.translate("[IMAGE] add cylinder shape with radius: [radius] and height: [height] to compound shape [name] at x: [x1] y: [y1] z: [z1] with rotation x: [x2] y: [y2] z: [z2]"),
               blockIconURI: compoundIcon,
               arguments: {
                 IMAGE: {
@@ -592,7 +598,7 @@
             {
               opcode: "compBodyAddCone",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate("[IMAGE] add cone shape with radius: [radius] and height: [height] to compound body [name] at x: [x1] y: [y1] z: [z1] with rotation x: [x2] y: [y2] z: [z2]"),
+              text: Scratch.translate("[IMAGE] add cone shape with radius: [radius] and height: [height] to compound shape [name] at x: [x1] y: [y1] z: [z1] with rotation x: [x2] y: [y2] z: [z2]"),
               blockIconURI: compoundIcon,
               arguments: {
                 IMAGE: {
@@ -640,7 +646,7 @@
             {
               opcode: "compBodyAddCapsule",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate("[IMAGE] add capsule shape with radius: [radius] and height: [height] to compound body [name] at x: [x1] y: [y1] z: [z1] with rotation x: [x2] y: [y2] z: [z2]"),
+              text: Scratch.translate("[IMAGE] add capsule shape with radius: [radius] and height: [height] to compound shape [name] at x: [x1] y: [y1] z: [z1] with rotation x: [x2] y: [y2] z: [z2]"),
               blockIconURI: compoundIcon,
               arguments: {
                 IMAGE: {
@@ -694,7 +700,7 @@
               arguments: {
                 name: {
                   type: Scratch.ArgumentType.STRING,
-                  defaultValue: "body",
+                  defaultValue: "compound shape",
                 },
                 mass: {
                   type: Scratch.ArgumentType.NUMBER,
@@ -718,6 +724,29 @@
                 value: {
                   type: Scratch.ArgumentType.NUMBER,
                   defaultValue: 0.5,
+                },
+              },
+            },
+            {
+              opcode: "setBodyGravity",
+              blockType: Scratch.BlockType.COMMAND,
+              text: Scratch.translate("set gravity of [body] to x: [x] y: [y] z: [z]"),
+              arguments: {
+                body: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: "body"
+                },
+                x: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 0,
+                },
+                y: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 0,
+                },
+                z: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 0,
                 },
               },
             },
@@ -1033,20 +1062,125 @@
                 }
               }
             },
+            "---",
+            {
+              blockType: "label",
+              text: Scratch.translate("Forces"),
+            },
+            {
+              opcode: "pushForce",
+              blockType: Scratch.BlockType.COMMAND,
+              text: Scratch.translate("push body [name] with [force] x: [x] y: [y] z: [z] newtons with offset x: [x2] y: [y2] z: [z2] meters"),
+              arguments: {
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: "body",
+                },
+                force: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: "force",
+                  menu: "forceMenu"
+                },
+                x: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 1,
+                },
+                y: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 1,
+                },
+                z: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 1,
+                },
+                x2: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 0,
+                },
+                y2: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 0.25,
+                },
+                z2: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 0,
+                },
+              },
+            },
+            {
+              opcode: "pushCentralForce",
+              blockType: Scratch.BlockType.COMMAND,
+              text: Scratch.translate("push body [name] with central [force] force x: [x] y: [y] z: [z] newtons"),
+              arguments: {
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: "body",
+                },
+                force: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: "force",
+                  menu: "centralForceMenu",
+                },
+                x: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 1,
+                },
+                y: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 1,
+                },
+                z: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 1,
+                },
+              },
+            },
+            {
+              opcode: "pushTorque",
+              blockType: Scratch.BlockType.COMMAND,
+              text: Scratch.translate("push body [name] with [torque] x: [x] y: [y] z: [z]"),
+              arguments: {
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: "body",
+                },
+                torque: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: "applyTorque",
+                  menu: "torqueMenu",
+                },
+                x: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 1,
+                },
+                y: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 1,
+                },
+                z: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 1,
+                },
+              },
+            },
+            {
+              opcode: "clearForces",
+              blockType: Scratch.BlockType.COMMAND,
+              text: Scratch.translate("stop pushing [name]"),
+              arguments: {
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: "body",
+                }
+              }
+            },
+            "---",
+            {
+              blockType: "label",
+              text: Scratch.translate("Constraints"),
+            }
           ],
           menus: {
-            staticDynamic: {
-              items: [
-                {
-                  text: Scratch.translate("static"),
-                  value: "btBvhTriangleMeshShape",
-                },
-                {
-                  text: Scratch.translate("dynamic"),
-                  value: "btGImpactMeshShape",
-                },
-              ],
-            },
             meshMenu: {
               items: [
                 {
@@ -1127,6 +1261,45 @@
                 },
               ],
             },
+            forceMenu: {
+              acceptReporters: false,
+              items: [
+                {
+                  text: Scratch.translate("force"),
+                  value: "applyForce",
+                },
+                {
+                  text: Scratch.translate("impulse"),
+                  value: "applyImpulse",
+                },
+              ],
+            },
+            centralForceMenu: {
+              acceptReporters: false,
+              items: [
+                {
+                  text: Scratch.translate("force"),
+                  value: "applyCentralForce",
+                },
+                {
+                  text: Scratch.translate("impulse"),
+                  value: "applyCentralImpulse",
+                },
+              ],
+            },
+            torqueMenu: {
+              acceptReporters: false,
+              items: [
+                {
+                  text: Scratch.translate("torque"),
+                  value: "applyTorque",
+                },
+                {
+                  text: Scratch.translate("torque impulse"),
+                  value: "applyTorqueImpulse",
+                },
+              ],
+            },
             lists: {
               acceptReporters: false,
               items: "listsMenu",
@@ -1154,18 +1327,15 @@
         }
 
         world.stepSimulation(deltaTime, maxSubSteps, 1 / runtime.frameLoop.framerate);
-
         const dispatcher = world.getDispatcher();
         const numManifolds = dispatcher.getNumManifolds();
 
-        // TODO: Optimize
         for (let i = 0; i < numManifolds; i++) {
           const contactManifold = dispatcher.getManifoldByIndexInternal(i);
           const body0 = Ammo.castObject(contactManifold.getBody0(), Ammo.btRigidBody);
           const body1 = Ammo.castObject(contactManifold.getBody1(), Ammo.btRigidBody);
-          const numContacts = contactManifold.getNumContacts();
 
-          if (numContacts > 0) {
+          if (contactManifold.getNumContacts() > 0) {
             const name0 = body0.userData;
             const name1 = body1.userData;
             if (bodies[name0] && bodies[name1]) {
@@ -1177,7 +1347,7 @@
       }
 
       setMaxSubSteps({ value }) {
-        //TODO: This doesn't seem to affect the quality or performance of the simulation.
+        //! This doesn't work.
         maxSubSteps = value;
       }
 
@@ -1236,7 +1406,7 @@
             let thisItem;
 
             for (let i = 0; i < list.value.length; i++) {
-              thisItem = list.value[i].split(/[\s,|, ]+/);
+              thisItem = list.value[i].split(" ");  //* space-delimited, for more use this regex: "/[\s,|, ]+/"
               points.push(new Ammo.btVector3(thisItem[0], thisItem[1], thisItem[2]));
             }
 
@@ -1268,24 +1438,92 @@
       }
 
       createMeshBody({ name, mass, vertices, faces }) {
-        /*switch (complexity) {
-          case "simple":
-            // generate a btConvexHullShape
-            break;
-          case "static": 
-            // btBvhTriangleMeshShape for fast static triangle mesh detection
-            https://threejs.org/examples/#webgl_raycaster_bvh -- this link shows just how much faster BVH is
-            break;
-          case "complex":
-            // use btGImpactMeshShape for dynamic triangle meshes. Significantly less performant
-            break;
-        }*/
+        if (!bodies[name]) {
+          
+          // get the vertices from the list
+          const list = target.lookupVariableByNameAndType(vertices, "list");
+          let thisItem;
+          for (let i = 0; i < list.value.length; i++) {
+            thisItem = list.value[i].split(" "); //* space-delimited, for more use this regex: "/[\s,|, ]+/"
+            points.push(new Ammo.btVector3(thisItem[0], thisItem[1], thisItem[2]));
+          }
+
+          switch (complexity) {
+            case "simple":              
+
+              const shape = new Ammo.btConvexHullShape();
+              for (let i = 0; i < points.length; i++) {
+                shape.addPoint(points[i], true);
+              }
+
+              break;
+            case "static": 
+
+              // btBvhTriangleMeshShape for fast static triangle mesh detection
+              https://threejs.org/examples/#webgl_raycaster_bvh -- this link shows just how much faster BVH is
+              
+              break;
+            case "complex":
+              
+              // use btGImpactMeshShape for dynamic triangle meshes. Significantly less performant
+              break;
+          }
+        }
       }
 
       // TODO: Meshes
       createMeshOBJ({complexity, name, mass, file}) {
         //const shape = new Ammo[complexity];
       }
+
+          /* function createGImpactCollision(mesh, scale) {
+
+      let faces, vertices;
+      let totvert = 0;
+
+      if (mesh.isMesh) {
+          let data = getMeshData(mesh);
+
+          faces = data.faces;
+          vertices = data.vertices;
+
+          totvert = vertices.length;
+
+      }
+      else {
+          console.error("cannot make mesh shape for non-Mesh object");
+      }
+
+      if (totvert == 0) {
+          console.error("no vertices to define mesh shape with");
+      }
+
+      if (!scale)
+          scale = { x: 1, y: 1, z: 1 };
+
+      vertices, faces
+      let ammoMesh = new Ammo.btTriangleMesh();
+
+      for (let i = 0, l = faces.length; i < l; i++) {
+          let a = faces[i].a;
+          let b = faces[i].b;
+          let c = faces[i].c;
+          ammoMesh.addTriangle(
+              new Ammo.btVector3(vertices[a].x, vertices[a].y, vertices[a].z),
+              new Ammo.btVector3(vertices[b].x, vertices[b].y, vertices[b].z),
+              new Ammo.btVector3(vertices[c].x, vertices[c].y, vertices[c].z),
+              false
+          );
+      }
+
+      let triangleShape = new Ammo.btGImpactMeshShape(ammoMesh);
+      triangleShape.setMargin(0.01);
+      triangleShape.setLocalScaling(new Ammo.btVector3(scale.x, scale.y, scale.z));
+      triangleShape.updateBound();
+
+      return triangleShape;
+
+    } */
     
       createCompoundShape({ name }, { target }) {
         if (!compoundShapes[name] && !bodies[name]) {
@@ -1365,6 +1603,12 @@
           bodies[name][property](value);
         } else {
           console.warn(`Attempted to set material of nonexistent body "${name}" in ${(target.isStage) ? "Stage" : "Sprite \"" + target.sprite.name}"`);
+        }
+      }
+      
+      setBodyGravity({ body, x, y, z }, { target }) {
+        if (bodies[name]) {
+          bodies[name].setGravity(x, y, z)
         }
       }
 
@@ -1544,10 +1788,10 @@
           if (bodies[body]) {
             return bodies[body]?.includes(Ammo.castObject(rays[name]?.get_m_collisionObject(), Ammo.btRigidBody).userData);
           } else {
-            console.warn(`Attempted to detect if nonexistent body "${body}" was intersecting ray "${name}" in ${(target.isStage) ? "Stage" : "Sprite \"" + target.sprite.name}"`);
+            console.warn(`Attempted to detect if nonexistent body "${body}" was touching ray "${name}" in ${(target.isStage) ? "Stage" : "Sprite \"" + target.sprite.name}"`);
           }
         } else {
-          console.warn(`Attempted to get intersecting body of nonexistent ray "${name}" in ${(target.isStage) ? "Stage" : "Sprite \"" + target.sprite.name}"`);
+          console.warn(`Attempted to get body touching nonexistent ray "${name}" in ${(target.isStage) ? "Stage" : "Sprite \"" + target.sprite.name}"`);
         }
       }
 
@@ -1558,7 +1802,36 @@
           console.warn(`Attempted to delete nonexistent ray "${name}" in ${(target.isStage) ? "Stage" : "Sprite \"" + target.sprite.name}"`)
         }
       }
+
+      //TODO: Forces: centralForce, Central Impulse, Central Local Force, Force, Gravity, Impulse, localTorque, Torque, TorqueImpulse, clearForces
+      pushForce({ name, force, x, y, z, x2, y2, z2 }, { target }) {
+        if (bodies[name]) {
+          bodies[name][force](new Ammo.btVector3(x, y, z), new Ammo.btVector3(x2, y2, z2));
+        }
+      }
+
+      // TODO: include blocks that can apply forces based on direction and magnitude
+
+      pushCentralForce({ name, force, x, y, z }, { target }) {
+        if (bodies[name]) {
+          bodies[name][force](new Ammo.btVector3(x, y, z));
+        }
+      }
+      
+      pushTorque({ name, torque, x, y, z }, { target }) {
+        if (bodies[name]) {
+          bodies[name][torque](new Ammo.btVector3(x, y, z));
+        }
+      }
+
+      clearForces({ name }, { target }) {
+        if (bodies[name]) {
+          bodies[name].clearForces();
+        }
+      }
     }
+
+    console.log(Ammo);
 
     Scratch.extensions.register(new AmmoPhysics());
   })
