@@ -30,7 +30,7 @@ https://github.com/user-attachments/assets/ffaa1071-dea3-4bf6-b804-900e788113a1
     - [x] Collision Detection
     - [x] Raycasting
     - [ ] Enable/disable collision response
-- [ ] Manual Impact forces (like "push with force" block in Box2D)
+- [x] Manual Impact forces (like "push with force" block in Box2D)
 - Player Management?
 - Vehicle support?
 - Soft bodies?
