@@ -8,10 +8,11 @@ The goal is to provide feature-complete, advanced, and performant 3D physics in 
 https://github.com/user-attachments/assets/ffaa1071-dea3-4bf6-b804-900e788113a1
 
 ## What I'm working on
-- Raycasting Rewrite
-- Optimization
-- Bug fixing
+- Push Forces (impulse, torque, etc)
 - Triangle Mesh Support
+- Constraints
+- Bug fixing
+- Optimization
 
 ## Task list:
 - [ ] All shape types:
