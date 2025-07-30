@@ -198,7 +198,7 @@
       //! On rare occasion, this seems to trigger an "Aborted: OOM (Out of Memory)" error and breaks the project until the page is refreshed.
       world.setGravity(new Ammo.btVector3(0, -9.81, 0));
       for (const key in bodies) {
-        if (bodies.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(bodies, key)) {
           const body = bodies[key];
           if (body) {
             world.removeRigidBody(body);
@@ -213,7 +213,7 @@
       bodies = {};
 
       for (const key in rays) {
-        if (rays.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(rays, key)) {
           const ray = rays[key];
           if (ray) {
             Ammo.destroy(ray);
@@ -224,7 +224,7 @@
       rays = {};
 
       for (const key in constraints) {
-        if (constraints.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(constraints, key)) {
           const constraint = constraints[key];
           if (constraint) {
             Ammo.destroy(constraint);
@@ -1441,7 +1441,7 @@
       reset() {
         world.setGravity(new Ammo.btVector3(0, -9.81, 0));
         for (const key in bodies) {
-          if (bodies.hasOwnProperty(key)) {
+          if (Object.prototype.hasOwnProperty.call(bodies, key)) {
             const body = bodies[key];
             if (body) {
               world.removeRigidBody(body);
@@ -1457,7 +1457,7 @@
         bodies = {};
   
         for (const key in rays) {
-          if (rays.hasOwnProperty(key)) {
+            if (Object.prototype.hasOwnProperty.call(rays, key)) {
             const ray = rays[key];
             if (ray) {
               Ammo.destroy(ray);
@@ -1468,7 +1468,7 @@
         rays = {};
   
         for (const key in constraints) {
-          if (constraints.hasOwnProperty(key)) {
+            if (Object.prototype.hasOwnProperty.call(constraints, key)) {
             const constraint = constraints[key];
             if (constraint) {
               Ammo.destroy(constraint);
@@ -1604,10 +1604,10 @@
             case "btBvhTriangleMeshShape": 
 
               // btBvhTriangleMeshShape for fast static triangle mesh detection
-              https://threejs.org/examples/#webgl_raycaster_bvh -- this link shows just how much faster BVH is
+              //https://threejs.org/examples/#webgl_raycaster_bvh -- this link shows just how much faster BVH is
               
               break;
-            case "btGImpactMeshShape":
+            case "btGImpactMeshShape": {
               //! Pressing the stop button then the green flag prevents the project from ever running in that session if using an invalid list for loading GImpactMeshes, see above.
               const faceList = target.lookupVariableByNameAndType(faces, "list");
               const mesh = createTriangleMesh(points, faceList);
@@ -1633,6 +1633,7 @@
               bodies[name] = body;
               bodies[name].collisions = [];
               break;
+            }
           }
         }
       }
