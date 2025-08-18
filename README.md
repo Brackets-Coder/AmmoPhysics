@@ -8,14 +8,11 @@ The goal is to provide feature-complete, advanced, and performant 3D physics in 
 https://github.com/user-attachments/assets/ffaa1071-dea3-4bf6-b804-900e788113a1
 
 ## What I'm working on
-- Push Forces (impulse, torque, etc)
-- Triangle Mesh Support
-- Constraints
 - Bug fixing
 - Optimization
 
 ## Task list:
-- [ ] All shape types:
+- [x] All shape types:
     - [x] Boxes
     - [x] Spheres
     - [x] Cylinders
@@ -23,14 +20,14 @@ https://github.com/user-attachments/assets/ffaa1071-dea3-4bf6-b804-900e788113a1
     - [x] Capsules
     - ~~Planes~~
     - [x] Convex Hulls
-    - [ ] Triangle Meshes
+    - [x] Triangle Meshes
     - [x] Compound bodies
 - [x] Physical Materials (friction, restitution, etc.)
-- [ ] Constraints (All types)
-- [ ] Collision:
+- [x] Constraints (All types)
+- [x] Collision:
     - [x] Collision Detection
     - [x] Raycasting
-    - [ ] Enable/disable collision response
+    - [x] Enable/disable collision response
 - [x] Manual Impact forces (like "push with force" block in Box2D)
 - Player Management?
 - Vehicle support?
