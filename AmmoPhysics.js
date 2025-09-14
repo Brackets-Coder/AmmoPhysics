@@ -4,10 +4,12 @@
 // By: -MasterMath- <https://scratch.mit.edu/users/-MasterMath-/>
 // License: MPL-2.0 and MIT
 
+// V0.9.5
+
 // Development using Cannon.js started December 14, 2024 - discontinued.
 // Development using Ammo.js started January 30, 2025.
 
-// ChatGPT and AI LLMs were used to assist in the learning of Ammo.js. It did not write all of the code for me.
+// ChatGPT and AI LLMs were used to assist in the learning of Ammo.js due to the apparent lack of documentation. It did not write all of the code for me.
 
 /* eslint-disable */
 (function (Scratch) {
@@ -273,11 +275,15 @@
     const constraintIcon = "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHdpZHRoPSI1NzYiIGhlaWdodD0iNDQ4LjIiIHZpZXdCb3g9IjAsMCw1NzYsNDQ4LjIiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDQ4LDQ0KSI+PGcgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSJub25lIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiPjxwYXRoIGQ9Ik0zNzEuNSwyMGMtMTYuNiwwIC0zMi43LDQuNSAtNDYuOCwxMi43Yy0xNS44LC0xNiAtMzQuMiwtMjkuNCAtNTQuNSwtMzkuNWMyOC4yLC0yNCA2NC4xLC0zNy4yIDEwMS4zLC0zNy4yYzg2LjQsMCAxNTYuNSw3MCAxNTYuNSwxNTYuNWMwLDQxLjUgLTE2LjUsODEuMyAtNDUuOCwxMTAuNmwtNzEuMSw3MS4xYy0yOS4zLDI5LjMgLTY5LjEsNDUuOCAtMTEwLjYsNDUuOGMtODYuNCwwIC0xNTYuNSwtNzAgLTE1Ni41LC0xNTYuNWMwLC0xLjUgMCwtMyAwLjEsLTQuNWMwLjUsLTE3LjcgMTUuMiwtMzEuNiAzMi45LC0zMS4xYzE3LjcsMC41IDMxLjYsMTUuMiAzMS4xLDMyLjljMCwwLjkgMCwxLjggMCwyLjZjMCw1MS4xIDQxLjQsOTIuNSA5Mi41LDkyLjVjMjQuNSwwIDQ4LC05LjcgNjUuNCwtMjcuMWw3MS4xLC03MS4xYzE3LjMsLTE3LjMgMjcuMSwtNDAuOSAyNy4xLC02NS40YzAsLTUxLjEgLTQxLjQsLTkyLjUgLTkyLjUsLTkyLjV6TTIyNy4yLDk3LjNjLTEuOSwtMC44IC0zLjgsLTEuOSAtNS41LC0zLjFjLTEyLjYsLTYuNSAtMjcsLTEwLjIgLTQyLjEsLTEwLjJjLTI0LjUsMCAtNDgsOS43IC02NS40LDI3LjFsLTcxLjEsNzEuMWMtMTcuMywxNy4zIC0yNy4xLDQwLjkgLTI3LjEsNjUuNGMwLDUxLjEgNDEuNCw5Mi41IDkyLjUsOTIuNWMxNi41LDAgMzIuNiwtNC40IDQ2LjcsLTEyLjZjMTUuOCwxNiAzNC4yLDI5LjQgNTQuNiwzOS41Yy0yOC4yLDIzLjkgLTY0LDM3LjIgLTEwMS4zLDM3LjJjLTg2LjQsMCAtMTU2LjUsLTcwIC0xNTYuNSwtMTU2LjVjMCwtNDEuNSAxNi41LC04MS4zIDQ1LjgsLTExMC42bDcxLjEsLTcxLjFjMjkuMywtMjkuMyA2OS4xLC00NS44IDExMC42LC00NS44Yzg2LjYsMCAxNTYuNSw3MC42IDE1Ni41LDE1Ni45YzAsMS4zIDAsMi42IDAsMy45Yy0wLjQsMTcuNyAtMTUuMSwzMS42IC0zMi44LDMxLjJjLTE3LjcsLTAuNCAtMzEuNiwtMTUuMSAtMzEuMiwtMzIuOGMwLC0wLjggMCwtMS41IDAsLTIuM2MwLC0zMy43IC0xOCwtNjMuMyAtNDQuOCwtNzkuNnoiLz48L2c+PC9nPjwvc3ZnPjwhLS1yb3RhdGlvbkNlbnRlcjoyODg6MjI0LS0+"
 
     // TODO: Scratch.Cast()
+    // v1.2: Vehicle support
+    // v1.5: Bug fixing and optimization
+    // v1.7: Debug renderer support
+    // v2.0: soft bodies
     //! Fix bugs:
     //! • Out of memory -- I can't remove this, but I can potentially mitigate it with good memory management using Ammo.destroy(); However, creating 1000 cubes at once or spamming a script with lots of creating objects will cause this to fail.
     //* NOTE TO SELF: @s_federici <https://scratch.mit.edu/users/s_federici> and @costc075202 <https://scratch.mit.edu/users/costc075202> want to know when this is finished.
 
-    class AmmoPhysics {
+    class AmmoPhysics {H
       getInfo() {
         return {
           id: "masterMathAmmoPhysics",
@@ -1254,7 +1260,7 @@
             {
               opcode: "addConstraint",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate("add [type] with name: [name] to body [bodyA] from body [bodyB] and enable collision [collide]"),
+              text: Scratch.translate("attach body [bodyA] to body [bodyB] using [type] constraint with name: [name] and enable collision [collide]"),
               blockIconURI: constraintIcon,
               arguments: {
                 type: {
@@ -1278,6 +1284,30 @@
                   defaultValue: false,
                 },
               },
+            },
+            {
+              opcode: "setConstraintLimits",
+              blockType: Scratch.BlockType.COMMAND,
+              text: Scratch.translate("set constraint [constraint] limits to x: [x] y: [y] z: [z]"),
+              blockIconURI: constraintIcon,
+              arguments: {
+                constraint: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: "constraint",
+                },
+                x: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 0,
+                },
+                y: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 0,
+                },
+                z: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 0,
+                },
+              }
             },
             {
               opcode: "removeConstraint",
@@ -1328,7 +1358,7 @@
                   value: "setFriction",
                 },
                 {
-                  text: Scratch.translate("restitution"),
+                  text: Scratch.translate("bounciness"),
                   value: "setRestitution",
                 },
               ],
@@ -1368,8 +1398,8 @@
                   value: "position",
                 },
                 {
-                  text: Scratch.translate("rotation"),
-                  value: "rotation",
+                  text: Scratch.translate("normal"),
+                  value: "normal",
                 },
               ],
             },
@@ -1439,6 +1469,10 @@
                   text: Scratch.translate("fixed constraint"),
                   value: "btFixedConstraint",
                 },
+                {
+                  text: Scratch.translate("slider"),
+                  value: "btSliderConstraint",
+                }
               ],
             },
             lists: {
@@ -1503,12 +1537,14 @@
         constraints = {};
       }
 
+      // TODO: fix step simulation not working when FPS is set to 0
       step() {
         for (const key in bodies) {
           bodies[key].collisions = [];
         }
 
         world.stepSimulation(deltaTime, maxSubSteps, 1 / runtime.frameLoop.framerate);
+
         const dispatcher = world.getDispatcher();
         const numManifolds = dispatcher.getNumManifolds();
 
@@ -1663,6 +1699,7 @@
         const rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, motionState, shape, localInertia);
         const body = new Ammo.btRigidBody(rbInfo);
       
+        body.userData = name;
         world.addRigidBody(body);
         bodies[name] = body;
         bodies[name].collisions = [];
@@ -1766,7 +1803,7 @@
         }
       }
       
-      setBodyGravity({ body, x, y, z }) {
+      setBodyGravity({ body, x, y, z }, { target }) {
         body = Cast.toString(body)
         if (bodies[body]) {
           const gravity = new Ammo.btVector3(Cast.toNumber(x), Cast.toNumber(y), Cast.toNumber(z));
@@ -1793,16 +1830,18 @@
           console.warn(`Attempted to delete nonexistent body "${name}" in ${(target.isStage) ? "Stage" : "Sprite \"" + target.sprite.name}"`);
         }
       }
-      
-      //TODO: casting this block and below
 
       setBodyTransformation({ transform, name, x, y, z }, { target }) {
+        name = Cast.toString(name);
+        x = Cast.toNumber(x);
+        y = Cast.toNumber(y);
+        z = Cast.toNumber(z);
         if (bodies[name]) {
           const tempTransform = new Ammo.btTransform();
           bodies[name].getMotionState().getWorldTransform(tempTransform);
           const quaternion = eulerToQuaternion(x, y, z);
 
-          switch (transform) {
+          switch (Cast.toString(transform)) {
             case "position":
               tempTransform.setOrigin(new Ammo.btVector3(x, y, z));
               break;
@@ -1820,6 +1859,10 @@
       }
 
       changeBodyTransformation({ transform, name, x, y, z }, { target }) {
+        name = Cast.toString(name);
+        x = Cast.toNumber(x);
+        y = Cast.toNumber(y);
+        z = Cast.toNumber(z);
         if (bodies[name]) {
           const tempTransform = new Ammo.btTransform();
           bodies[name].getMotionState().getWorldTransform(tempTransform);
@@ -1827,19 +1870,20 @@
           const newPos = new Ammo.btVector3(position.x() + x, position.y() + y, position.z() + z);
           const rotation = quaternionToEuler(tempTransform.getRotation());
 
-          switch (transform) {
+          switch (Cast.toString(transform)) {
             case "position":
               tempTransform.setOrigin(newPos);
               break;
-            case "rotation":
+            case "rotation": {
               const newRotation = {
                 x: rotation.x + x,
                 y: rotation.y + y,
                 z: rotation.z + z,
               }
-              newQuaternion = eulerToQuaternion(newRotation.x, newRotation.y, newRotation.z);
+              let newQuaternion = eulerToQuaternion(newRotation.x, newRotation.y, newRotation.z);
               tempTransform.setRotation(new Ammo.btQuaternion(newQuaternion.x, newQuaternion.y, newQuaternion.z, newQuaternion.w));
               break;
+            }
           }
         
           bodies[name].setWorldTransform(tempTransform);
@@ -1853,6 +1897,7 @@
       }
 
       bodyTransformation({ xyz, transform, name }, { target }) {
+        name = Cast.toString(name);
         if (bodies[name]) {
           const newTransform = new Ammo.btTransform();
           bodies[name].getMotionState().getWorldTransform(newTransform);
@@ -1860,7 +1905,7 @@
           const position = newTransform.getOrigin();
           const rotation = newTransform.getRotation();
 
-          switch (transform) {
+          switch (Cast.toString(transform)) {
             case "position":
               return position[xyz]();
             case "rotation":
@@ -1874,8 +1919,9 @@
       }
 
       toggleCollisionResponse({ toggle, name }, { target }) {
+        name = Cast.toString(name);
         if (bodies[name]) {
-          if (toggle == "enable") {
+          if (Cast.toString(toggle) == "enable") {
             bodies[name].setCollisionFlags(bodies[name].getCollisionFlags() & ~4);
           } else {
             bodies[name].setCollisionFlags(bodies[name].getCollisionFlags() | 4);
@@ -1888,18 +1934,25 @@
       }
 
       bodyTouchingBody({ body, body2 }) {
-        return bodies[body]?.collisions.includes(body2);
+        return bodies[Cast.toString(body)]?.collisions.includes(Cast.toString(body2));
       }
 
       bodyTouchingAny({ body }) {
-        return bodies[body]?.collisions.length > 0;
+        return bodies[Cast.toString(body)]?.collisions.length > 0;
       }
 
       allBodiesTouchingBody({ body }) {
-        return bodies[body]?.collisions;
+        return bodies[Cast.toString(body)]?.collisions;
       }
 
       rayCast({ name, x, y, z, x2, y2, z2 }) {
+        name = Cast.toString(name);
+        x = Cast.toNumber(x);
+        y = Cast.toNumber(y);
+        z = Cast.toNumber(z);
+        x2 = Cast.toNumber(x2);
+        y2 = Cast.toNumber(y2);
+        z2 = Cast.toNumber(z2);
         if (rays[name]) {
           Ammo.destroy(rays[name]);
           delete rays[name];
@@ -1912,13 +1965,15 @@
         rays[name].endpoint = to;
       }
 
+      // TODO: rotZ never used...
       rayCastDirection({ name, x, y, z, rotX, rotY, rotZ, distance }) {
+        name = Cast.toString(name);
         if (rays[name]) {
           Ammo.destroy(rays[name]);
           delete rays[name];
         }
-        const pitch = (rotX * Math.PI) / 180;
-        const yaw = (rotY * Math.PI) / 180;
+        const pitch = (Cast.toNumber(rotX) * Math.PI) / 180;
+        const yaw = (Cast.toNumber(rotY) * Math.PI) / 180;
         const dir = new Ammo.btVector3(
           Math.cos(yaw) * Math.cos(pitch),
           Math.sin(pitch),
@@ -1926,7 +1981,7 @@
         );
         dir.op_mul(distance);
 
-        const from = new Ammo.btVector3(x, y, z);
+        const from = new Ammo.btVector3(Cast.toNumber(x), Cast.toNumber(y), Cast.toNumber(z));
         const to = new Ammo.btVector3(from.x() + dir.x(), from.y() + dir.y(), from.z() + dir.z());
 
         const rayCallback = new Ammo.AllHitsRayResultCallback(from, to);
@@ -1936,6 +1991,13 @@
       }
 
       rayCastTowards({ name, x, y, z, x2, y2, z2, distance }) {
+        name = Cast.toString(name);
+        x = Cast.toNumber(x);
+        y = Cast.toNumber(y);
+        z = Cast.toNumber(z);
+        x2 = Cast.toNumber(x2);
+        y2 = Cast.toNumber(y2);
+        z2 = Cast.toNumber(z2);
         if (rays[name]) {
           Ammo.destroy(rays[name]);
           delete rays[name];
@@ -1953,16 +2015,16 @@
       }
 
       getRay({ xyz, property, name }, { target }) {
+        name = Cast.toString(name);
         if (rays[name]) {
           const callback = rays[name];
-          if (callback && callback.hasHit()) {
-            switch (property) {
+          if (callback) {
+            switch (Cast.toString(property)) {
               case "position":
-                return callback.get_m_hitPointWorld()[xyz]();
-              case "rotation":
-                return callback.get_m_hitNormalWorld()[xyz]();
+                return callback.hasHit() ? callback.get_m_hitPointWorld()[xyz]() : rays[name].endpoint[xyz];
+              case "normal":
+                return callback.hasHit() ? callback.get_m_hitNormalWorld()[xyz]() : null;
             }
-            return rays[name].endpoint[xyz];
           }
           return null;
         } else {
@@ -1971,6 +2033,8 @@
       }
 
       getRayTouching({ name, body }, { target }) {
+        name = Cast.toString(name);
+        body = Cast.toString(body);
         if (rays[name]) {
           if (bodies[body]) {
             return bodies[body]?.includes(Ammo.castObject(rays[name]?.get_m_collisionObject(), Ammo.btRigidBody).userData);
@@ -1983,6 +2047,7 @@
       }
 
       deleteRay({ name }, { target }) {
+        name = Cast.toString(name);
         if (rays[name]) {
           Ammo.destroy(rays[name]);
           delete rays[name];
@@ -1992,63 +2057,146 @@
       }
 
       // TODO: include blocks that can apply forces based on direction and magnitude
+      // TODO: do I want to support local transformation possibilities? e.g., push (body) forward (x) amount in the direction it's facing
       pushForce({ name, force, x, y, z, x2, y2, z2 }, { target }) {
+        name = Cast.toString(name);
+        x = Cast.toNumber(x);
+        y = Cast.toNumber(y);
+        z = Cast.toNumber(z);
+        x2 = Cast.toNumber(x2);
+        y2 = Cast.toNumber(y2);
+        z2 = Cast.toNumber(z2);
         if (bodies[name]) {
-          bodies[name][force](new Ammo.btVector3(x, y, z), new Ammo.btVector3(x2, y2, z2));
+          force = new Ammo.btVector3(x, y, z);
+          offset = new Ammo.btVector3(x2, y2, z2)
+          bodies[name][force](force, offset);
           bodies[name].activate(true);
+          Ammo.destroy(force);
+          Ammo.destroy(offset);
         } else {
           console.warn(`Attempted to apply force on nonexistent body "${name}" in ${(target.isStage) ? "Stage" : `Sprite "${target.sprite.name}"`}`);
         }
       }
 
       pushCentralForce({ name, force, x, y, z }, { target }) {
+        name = Cast.toString(name);
+        x = Cast.toNumber(x);
+        y = Cast.toNumber(y);
+        z = Cast.toNumber(z);
         if (bodies[name]) {
-          bodies[name][force](new Ammo.btVector3(x, y, z));
+          force = new Ammo.btVector3(x, y, z);
+          bodies[name][force](force);
           bodies[name].activate(true);
+          Ammo.destroy(force);
         } else {
           console.warn(`Attempted to apply force on nonexistent body "${name}" in ${(target.isStage) ? "Stage" : `Sprite "${target.sprite.name}"`}`);
         }
       }
       
       pushTorque({ name, torque, x, y, z }, { target }) {
+        name = Cast.toString(name);
+        x = Cast.toNumber(x);
+        y = Cast.toNumber(y);
+        z = Cast.toNumber(z);
         if (bodies[name]) {
-          bodies[name][torque](new Ammo.btVector3(x, y, z));
+          torque = new Ammo.btVector3(x, y, z);
+          bodies[name][torque](torque);
           bodies[name].activate(true);
+          Ammo.destroy(torque);
         } else {
           console.warn(`Attempted to apply force on nonexistent body "${name}" in ${(target.isStage) ? "Stage" : `Sprite "${target.sprite.name}"`}`);
         }
       }
 
       clearForces({ name }, { target }) {
+        name = Cast.toString(name);
         if (bodies[name]) {
           bodies[name].clearForces();
           bodies[name].activate(true);
         } else {
-          console.warn(`Attempted to clear forcees of nonexistent body "${name}" in ${(target.isStage) ? "Stage" : `Sprite "${target.sprite.name}"`}`)
+          console.warn(`Attempted to clear forces of nonexistent body "${name}" in ${(target.isStage) ? "Stage" : `Sprite "${target.sprite.name}"`}`);
         }
       }
 
-      // TODO: Add slider and cone twist constraint types.
+      // TODO: compute local frames/pivots instead of world transformation
       addConstraint({ type, name, bodyA, bodyB, collide }, { target }) {
         if (bodies[bodyA] && bodies[bodyB] && !constraints[name]) {
-          const transform1 = new Ammo.btTransform();
-          bodies[bodyA].getMotionState().getWorldTransform(transform1);
-
-          const transform2 = new Ammo.btTransform();
-          bodies[bodyB].getMotionState().getWorldTransform(transform2);
-
+      
+          // Get world transforms
+          const worldA = new Ammo.btTransform();
+          const worldB = new Ammo.btTransform();
+          bodies[bodyA].getMotionState().getWorldTransform(worldA);
+          bodies[bodyB].getMotionState().getWorldTransform(worldB);
+      
+          // Compute local transforms
+          const invA = new Ammo.btTransform();
+          worldA.inverse(invA);
+      
+          const localA = invA.op_mul(worldB); // local frame of B in A
+          const localB = new Ammo.btTransform();
+          localB.setIdentity(); // B’s frame relative to itself is identity
+      
           let constraint;
-          if (type == "btPoint2PointConstraint") {
-            constraint = new Ammo[type](bodies[bodyA], bodies[bodyB], transform1.getOrigin(), transform2.getOrigin());
-          } else {
-            constraint = new Ammo[type](bodies[bodyA], bodies[bodyB], transform1, transform2);
+      
+          switch (type) {
+            case "btPoint2PointConstraint":
+              // P2P can still use world-space positions
+              constraint = new Ammo.btPoint2PointConstraint(
+                bodies[bodyA],
+                bodies[bodyB],
+                worldA.getOrigin(),
+                worldB.getOrigin()
+              );
+              break;
+      
+            case "btHingeConstraint":
+              constraint = new Ammo.btHingeConstraint(bodies[bodyA], bodies[bodyB], localA, localB, true);
+              break;
+      
+            case "btSliderConstraint":
+              constraint = new Ammo.btSliderConstraint(bodies[bodyA], bodies[bodyB], localA, localB, true);
+              break;
+      
+            case "btFixedConstraint":
+              constraint = new Ammo.btGeneric6DofConstraint(bodies[bodyA], bodies[bodyB], localA, localB, true);
+              break;
+      
+            default:
+              console.warn("Unknown constraint type", type);
+              return;
           }
-
+      
           constraints[name] = constraint;
-
-          world.addConstraint(constraint, !Scratch.Cast.toBoolean(collide)); // if true, disable collision. Enable collision = false by default.
+          world.addConstraint(constraint, !Scratch.Cast.toBoolean(collide));
+      
+          // Clean up
+          Ammo.destroy(worldA);
+          Ammo.destroy(worldB);
+          Ammo.destroy(invA);
         }
       }
+      
+      setConstraintLimits({ constraint, x, y, z }, { target }) {
+        const c = constraints[constraint];
+        if (!c) return;
+      
+        // Hinge: x = lowerAngle, y = upperAngle
+        if (c instanceof Ammo.btHingeConstraint) {
+          c.setLimit(x, y);
+          return;
+        }
+      
+        // Slider: x = lowerLin, y = upperLin, z = lowerAng, assume upperAng = -lowerAng
+        if (c instanceof Ammo.btSliderConstraint) {
+          c.setLowerLinLimit(x);
+          c.setUpperLinLimit(y);
+          c.setLowerAngLimit(z);
+          c.setUpperAngLimit(-z);
+          return;
+        }
+      
+        console.warn(`Attempted to set limits of unsupporting or nonexistent constraint "${constraint} in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name + '"'}`);
+      }      
 
       removeConstraint({ name }, { target }) {
         if (constraints[name]) {
