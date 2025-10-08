@@ -239,7 +239,6 @@
     let bodies = {};
     let compoundShapes = {};
     let rays = {};
-    let constraints = {};
 
     const vm = Scratch.vm;
     const runtime = vm.runtime;
@@ -289,17 +288,6 @@
         }
       }
       rays = {};
-
-      for (const key in constraints) {
-        if (Object.prototype.hasOwnProperty.call(constraints, key)) {
-          const constraint = constraints[key];
-          if (constraint) {
-            Ammo.destroy(constraint);
-            delete constraints[key];
-          }
-        }
-      }
-      constraints = {};
     });
 
     // These SVG Icons from Blender source code: https://github.com/blender/blender/tree/main/release/datafiles/icons_svg
@@ -313,8 +301,6 @@
     const compoundIcon = "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHdpZHRoPSIxMzQ4Ljg4NzA5IiBoZWlnaHQ9IjEyMTMuNzc3NDIiIHZpZXdCb3g9IjAsMCwxMzQ4Ljg4NzA5LDEyMTMuNzc3NDIiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDQ2Ny42ODk1Miw0MTUuNDAyMzIpIj48ZyBmaWxsPSIjZmZmZmZmIiBzdHJva2U9Im5vbmUiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCI+PHBhdGggZD0iTTg0MC41NDkzNiwtNDEzLjk5MzIyYzIyLjQ0ODQ2LDAuMDAyMjUgNDAuNjQ2LDE4LjE5OTc1IDQwLjY0ODIxLDQwLjY0ODIxdjgxMi45NjQ1NWMtMC4wMDE5LDEwLjc3OTk0IC00LjI4NTMyLDIxLjExNzc1IC0xMS45MDgyOSwyOC43Mzk5MmwtNDcuOTE2MDYsNDcuOTE2MDZjLTAuNzM5MDksLTguMDAwNDEgLTIuNTAzMTYsLTE1Ljk3MjggLTMuMjAzNTIsLTIzLjk4NTg5Yy0xLjc5NTYsLTIwLjU0MzY4IC0yLjUxMTI0LC02Mi43NzIyIC0xOC4yNjg1NiwtODUuNjg3MjN2LTY4Mi4yOTY2bC0xNjIuNTkyOTIsMTYyLjkxMDgxdjMzNy4xOTU3MWMtNC44ODQ0MiwtNC4yNDk0NCAtMTEuMDgyODYsLTcuMDI3NDggLTE3LjkwNSwtNy42NDM2N2MtMS4wMDE4LC0wLjAyOTczIC0xLjk3NTI0LC0wLjA2MjY5IC0yLjg4NzgyLC0wLjEyOTc5Yy0xMS45MTUxNywtMC44NzYzMyAtMjMuODk5NTksMC4zNDEyMSAtMzUuODQyMDQsMGMtOC42NzA5NSwtMC4yNDc3NSAtMTYuODUwODQsLTEuNzE5OTggLTI0LjY2MTYsLTIuNDQ4Njh2LTMwMi45OTc1OWgtNzMxLjY2ODA5djI3OC4xNjk0N2MtOS45NDA4OCwzLjk4Njg5IC0xNy4zOTI3NCwxMi44NjQ5MyAtMTkuMzc4MDUsMjMuNjU2NTljLTAuMzQ0MjYsMS44NzEyOCAtMC41MjQxNSwzLjgwMDA5IC0wLjUyNDE1LDUuNzcwOTJjLTIuMjA0OTUsMTEuMzE5OTYgLTcuNzkxOTMsMjAuNzI5MjggLTE0LjM3NjMzLDMwLjM3MTk1Yy0xMi4xNDIyNSwxNy43ODE5NyAtMzIuNjEyOTQsMjYuODkzNzEgLTQ3LjAxNzg5LDQxLjY0NTJ2LTQyMC4yNjI0MmMwLjAwMTksLTEwLjc3OTk0IDQuMjg1MzIsLTIxLjExNzc1IDExLjkwODI5LC0yOC43Mzk5MmwyNDMuODg5MzUsLTI0My44ODkzNWM3LjYyMjE4LC03LjYyMjk3IDE3Ljk1OTk5LC0xMS45MDY0MiAyOC43Mzk5MiwtMTEuOTA4Mjl6TS0xMTguMTc3MzEsLTE3MC4xMDM4N2g2OTguMDA2NDdsMTYyLjExNjUxLC0xNjIuNTkyOTJoLTY5Ny41MzAwOXoiLz48cGF0aCBkPSJNMTAzLjc2NjQ2LDcyNC4xNTcxMWM0LjY3ODE2LC0zLjIxMDY5IDkuMTE1MjksLTYuNDY2ODUgMTMuMjUwNDUsLTkuNjk5NzZjOS44NDI4OCwtNy42OTUzIDE0LjM5ODk5LC0yMS41MjQzMSAyMy4wODAwMiwtMzAuMzYwOTJjMTEuMDMwMDksLTExLjIyNzczIDI3LjE0NDk4LC0yNC45Njg2NCAzMi41Nzk0MSwtNDEuMjM1NzVoMTY4Ljg5MTQ4YzMuOTYxMjgsNi41ODg0OSA5LjE5NDgxLDEyLjM3NDA2IDEzLjUxMDk3LDE4LjMwMTcxYzE5LjgxNDc5LDI3LjIxMzAyIDQ2LjE1NDcyLDQ4Ljg3MzQ5IDc2LjQ4MTE5LDYyLjk5NDcyeiIvPjxwYXRoIGQ9IiIvPjxwYXRoIGQ9IiIvPjxwYXRoIGQ9IiIvPjxwYXRoIGQ9Ik01Ni44NTA3NSwtNDAzLjQ5NTYxYzcuNzc5NzMsNy43Nzk3MyAxMi4wNzM4OSwxOC4zODA1MyAxMS45MDE3OSwyOS4zODEzNHY3NzIuMzE2MzRoMjM2LjY4Nzc1Yy0wLjMxMTgsMS4zMDg2NiAtMC41NDI0NCwyLjY0ODc2IC0wLjY4NjI5LDQuMDE0NzVjLTEuMDQ0ODQsMy4zOTk0NSAtMy43MzIwMSw2LjA1NTEyIC01LjYxNjg5LDkuMDcwOTVjLTEzLjMzOTEsMjEuMzQyNTggLTE4LjEzMzU0LDQzLjI0MzYzIC0xNi45MTYxOSw2OC4yMTA3NWgtMTU3LjQ4NTk1Yy0xLjY0MTI1LC03LjA3MjA0IC03Ljg2NDIyLC0xMy41NTM5MiAtMTAuMzg3MzgsLTE5LjY0NTM2Yy05LjQxNzgxLC0yMi43MzY2MiAtMzIuMzg0NSwtNDQuMjA5ODEgLTQ4LjI5Njc2LC02MS40Mjk5NWMtNy45NzA5NywtOC42MjYxNCAtMjMuMjkzODksLTE4LjM2MTk2IC0zMC4xNDI3MSwtMjguMzk1MjNjLTQuMjg5NTQsLTYuMjg0MDEgLTguNDY1MzUsLTE2LjIwNjYgLTEzLjAxNzg1LC0yMS41MTc4NWMtMy41MzQyOCwtNC4xMjMzMyAtOC44NzgyNiwtNy44NjM4MSAtMTEuMjY0MjgsLTEyLjUxNTQ0Yy0wLjA4MjAyLC0wLjE1OTg5IC0wLjE1OTU4LC0wLjMyMjk5IC0wLjIzMjk4LC0wLjQ4OTA2YzAuMTUzODEsLTEuMjY1OTcgMC4yMzI5OCwtMi41NTQ5NSAwLjIzMjk4LC0zLjg2MjRjMCwtNC42MzE5OCAtMC45OTM2NiwtOS4wMzE5MSAtMi43Nzk0NiwtMTIuOTk4MmMtMC4yOTQ3MiwtMC45OTUyNyAtMC42Nzc1OCwtMS45NTE0NCAtMS4xODIyMywtMi44NDg1OWMtMC42OTA3LC0xLjIyNzkgLTEuNTIyMzcsLTIuMzE1ODUgLTIuNDY2OTYsLTMuMjkxNTdjLTQuMzMyOTIsLTUuNzExMDkgLTEwLjU1Nzg2LC05LjkwNzkyIC0xNy43NDEyMSwtMTEuNjU2OHYtNjc0Ljk2MjI5Yy0wLjE2ODY0LC0xMC43ODA2NiAzLjk1MjM4LC0yMS4xODY3MSAxMS40NTYzNywtMjguOTI4ODVjNy41MDM5OSwtNy43NDIxNCAxNy43NzYyOSwtMTIuMTg2MTUgMjguNTU2OTMsLTEyLjM1NDI4YzExLjAwMDg0LC0wLjE3MjA2IDIxLjYwMTY0LDQuMTIyMSAyOS4zODEzNCwxMS45MDE3OXoiIG9wYWNpdHk9IjAuNSIvPjxwYXRoIGQ9IiIgb3BhY2l0eT0iMC41Ii8+PHBhdGggZD0iTTExMC4yODc1MSw0OTkuNDM2MWMzMC43ODQzMiwxMy40NzA3NSA1Ni40NzcxOSwyOS4zODY3IDc1LjU5NTU1LDQ4LjEzMjU5YzE5LjExODg2LDE4Ljc0NTg2IDMyLjM0Mzc3LDQxLjU1ODkzIDMyLjM0Mzc3LDY3LjA3OTQ4YzAuMTI0OTQsOC44MzQ0OSAtNC41MTY2MiwxNy4wNTE4NyAtMTIuMTQ3MzYsMjEuNTA1NTVjLTcuNjMwNzQsNC40NTM3MSAtMTcuMDY4MzgsNC40NTM3MSAtMjQuNjk5MTIsMGMtNy42MzA3NCwtNC40NTM3MSAtMTIuMjcyMzIsLTEyLjY3MTA5IC0xMi4xNDczNiwtMjEuNTA1NTVjMCwtOC4zMTYzIC00LjU5MTE5LC0xOS4yOTU5NCAtMTcuNzAyOTUsLTMyLjE1MjIxYy0xMy4xMTE3MywtMTIuODU2MjggLTM0LjAxMzk5LC0yNi40MzM3NCAtNjAuODU5NjgsLTM4LjE4MDc0Yy01My42OTA4OCwtMjMuNDk0IC0xMzAuNTczNTQsLTM5LjkwMzE5IC0yMTUuNDAwNDcsLTM5LjkwMzE5Yy04NC44MjY5NywwIC0xNjEuNzA5NTksMTYuNDA5MTkgLTIxNS40MDA0NywzOS45MDMxOWMtMjYuODQ1NjksMTEuNzQ3MDMgLTQ3Ljc0NzkyLDI1LjMyNDQ3IC02MC44NTk2OCwzOC4xODA3NGMtMTMuMTEyMiwxMi44NTYyOCAtMTcuNzAyOTUsMjMuODM1OTEgLTE3LjcwMjk1LDMyLjE1MjIxYzAuMTI0OTQsOC44MzQ0OSAtNC41MTY2MiwxNy4wNTE4NyAtMTIuMTQ3MzYsMjEuNTA1NTVjLTcuNjMwNzQsNC40NTM3MSAtMTcuMDY4MzgsNC40NTM3MSAtMjQuNjk5MTIsMGMtNy42MzA3NCwtNC40NTM3MSAtMTIuMjcyMjksLTEyLjY3MTA5IC0xMi4xNDczNiwtMjEuNTA1NTVjMCwtMjUuNTIwNTUgMTMuMjI0OTEsLTQ4LjMzMzYyIDMyLjM0Mzc3LC02Ny4wNzk0OGMxOS4xMTgzOSwtMTguNzQ1ODYgNDQuODExMjYsLTM0LjY2MTg0IDc1LjU5NTU1LC00OC4xMzI1OWM2MS41Njk1OSwtMjYuOTQxNjMgMTQzLjk2NjQ4LC00NC4wMTc5NCAyMzUuMDE3NjIsLTQ0LjAxNzk0YzkxLjA1MTE0LDAgMTczLjQ0ODA0LDE3LjA3NjMxIDIzNS4wMTc2Miw0NC4wMTc5NHoiIG9wYWNpdHk9IjAuNSIvPjxwYXRoIGQ9Ik0tMTAwLjIzMzE3LDExMi40NjEyMmM4LjEzOTEsMC4wMTA1OSAxNS43NDE2LDQuMDYyNTUgMjAuMjg4MzYsMTAuODEzMjVsMjgxLjcxNDYyLDQxNi40NDc3MmMwLjQxMSwwLjYyMDE1IDAuNzkzNTgsMS4yNTg3NCAxLjE0NjQ1LDEuOTEzNjljMTAuNTY3OTcsMTkuMjU2NTEgMTUuMzEwNTYsNDAuMTk4NzQgMTUuMzEwNTYsNjAuNzYzODRjMCw1OS42NDYyMyAtNDMuOTExNywxMDkuMzY5NDYgLTEwNi4xMjE2NiwxNDIuODY2ODRjLTYyLjIwOTQ1LDMzLjQ5NzM4IC0xNDUuMzMxOTQsNTMuMTA4NTQgLTIzNi44MzUyOCw1My4xMDg1NGMtOTEuNTAzMzUsMCAtMTc0LjYyNTg2LC0xOS42MTExNiAtMjM2LjgzNTI4LC01My4xMDg1NGMtNjIuMjA5OTIsLTMzLjQ5NzM4IC0xMDYuMTIxNjYsLTgzLjIyMDYxIC0xMDYuMTIxNjYsLTE0Mi44NjY4NGMwLC0yMC41ODMyIDQuODAwNDQsLTQxLjUyODg1IDE1LjIxNDUzLC02MC42Njc5N2MwLjM4MjIyLC0wLjY4OTU2IDAuNzk3NTQsLTEuMzYwMjIgMS4yNDQ0NSwtMi4wMDk3MmwyODEuNzE0NjIsLTQxNi40NDc3MmM0LjU0NjQxLC02Ljc1MDA3IDEyLjE0ODAyLC0xMC44MDE5IDIwLjI4NjM5LC0xMC44MTMwOXpNLTQwOS41MDY4OCw1NjUuMzY3MjZjLTYuMTYzNDIsMTEuNDM5OTUgLTkuMTg2MzUsMjQuMTYyNDggLTkuMTg2MzUsMzcuMDMyNDVjMCwzNS4wNTg4NiAyNy4zMjk3NSw3MS4xNDQ1NyA4MC4zODAzLDk5LjcxMDExYzUzLjA1MTA1LDI4LjU2NTU4IDEyOS4yMDgwNSw0Ny4yNzE0MSAyMTMuNTgyODIsNDcuMjcxNDFjODQuMzc0NzYsMCAxNjAuNTMxNzksLTE4LjcwNTg3IDIxMy41ODI4MiwtNDcuMjcxNDFjNTMuMDUwNTQsLTI4LjU2NTU4IDgwLjM4MDMsLTY0LjY1MTI1IDgwLjM4MDMsLTk5LjcxMDExYzAsLTEzLjE0ODA1IC0yLjg0NTA3LC0yNS4zMTcwOCAtOS4wOTA4MywtMzYuODQxMDZsLTI3My4zODkxLC00MDQuMTAzNThoLTIyLjk2NjM3eiIvPjxwYXRoIGQ9Ik03NTAuODQwODUsMzkyLjQyMzAyYzI1LjM3NTg0LDkuNzYwMiA0Ni42NjgzOCwyMS40NDAwNCA2Mi42NzIwMiwzNS45OTMyMmMxNi4wMDM2NCwxNC41NTMxOCAyNy4yMzE2MywzMy4yNTY4MyAyNy4yMzE2Myw1NC4zMDUyM2MwLjEwMzA0LDcuMjg3MjQgLTMuNzI1NTgsMTQuMDY1NDUgLTEwLjAxOTg5LDE3LjczOTE1Yy02LjI5NDMxLDMuNjczNyAtMTQuMDc5MDgsMy42NzM3IC0yMC4zNzM0MiwwYy02LjI5NDMxLC0zLjY3MzcgLTEwLjEyMjk2LC0xMC40NTE5MSAtMTAuMDE5OTIsLTE3LjczOTE1YzAsLTYuODUyMDYgLTMuNDY3ODUsLTE0Ljc2NzM3IC0xNC4wNTAwOCwtMjQuMzkwMTdjLTEwLjU4MTc5LC05LjYyMjM5IC0yNy44MDIyNywtMTkuNjU0NTggLTQ5Ljk2MzY1LC0yOC4xNzg1Yy00NC4zMjM1OSwtMTcuMDQ3OTEgLTEwOC4wMjYxNiwtMjguMjU3NzQgLTE3OC40NjU1NywtMjguMjU3NzRjLTcwLjQzOTQyLDAgLTEzNC4xNDE5NSwxMS4yMDk4MyAtMTc4LjQ2NTU0LDI4LjI1Nzc0Yy0yMi4xNjEzOCw4LjUyMzk2IC0zOS4zODE4NywxOC41NTYxMSAtNDkuOTYzNjksMjguMTc4NWMtMTAuNTgyNTgsOS42MjI4IC0xNC4wNTAwOCwxNy41MzgxMiAtMTQuMDUwMDgsMjQuMzkwMTdjMC4xMDMwNCw3LjI4NzI0IC0zLjcyNTYxLDE0LjA2NTQ1IC0xMC4wMTk5MiwxNy43MzkxNWMtNi4yOTQzMSwzLjY3MzcgLTE0LjA3OTExLDMuNjczNyAtMjAuMzczNDIsMGMtNi4yOTQzMSwtMy42NzM3IC0xMC4xMjI5NiwtMTAuNDUxOTEgLTEwLjAxOTkyLC0xNy43MzkxNWMwLC0yMS4wNDg0MyAxMS4yMjgwMiwtMzkuNzUyMDUgMjcuMjMxNjMsLTU0LjMwNTIzYzE2LjAwMzY0LC0xNC41NTMxOCAzNy4yOTYxOCwtMjYuMjMzMDMgNjIuNjcyMDIsLTM1Ljk5MzIyYzUwLjc1MTc1LC0xOS41MTk5OCAxMTguMzQ4ODgsLTMwLjk0MTE3IDE5Mi45ODg4NywtMzAuOTQxMTdjNzQuNjM5OTksMCAxNDIuMjM3MTIsMTEuNDIxMTYgMTkyLjk4ODg3LDMwLjk0MTE3eiIgb3BhY2l0eT0iMC41Ii8+PHBhdGggZD0iTTU2MC4zNzIyMiwxOTkuOTc2OTRjMTU0LjAwMjYzLDEuMzY5MTkgMjc4Ljg4MzEyLDEyNi4yNzQ3MiAyODAuMjA4NjQsMjgwLjI4NzQ2YzAuMDI4MzMsMC4xMzQ0NCAwLjA1NTI3LDAuMjY5MTcgMC4wODA4NSwwLjQwNDEyYzAsMC42OTEwOCAwLjA4MDgyLDEuMzYxOSAwLjA4MDgyLDIuMDUyOThjMCwxNTUuMTczODEgLTEyNS41ODE2NCwyODEuNDAwNDQgLTI4MC40MzUzNywyODIuNzMwODRjLTAuMTM0NDQsMC4wMjgzMyAtMC4yNjkxNCwwLjA1NTI3IC0wLjQwNDEyLDAuMDgwODVjLTAuNjkxMDgsMCAtMS4zNjE5NCwwLjA4MDg1IC0yLjA1MzAxLDAuMDgwODVjLTE1NS45OTk4NywwLjAwMDQxIC0yODIuODkyNDgsLTEyNi44OTI2OCAtMjgyLjg5MjQ4LC0yODIuODkyNTFjLTAuMDAzNDksLTAuODcwNzIgMC4wNDkyOCwtMS43NDA3MSAwLjE1Nzk5LC0yLjYwNDYxYzEuNDE5MywtMTU0Ljc5MTExIDEyNy42MTQwMiwtMjgwLjI4ODI4IDI4Mi43MzQ0OSwtMjgwLjI4Nzg3YzAuODQyOTksLTAuMDAzMzYgMS42ODUzNywwLjA0NjA1IDIuNTIyMjEsMC4xNDc5MXpNNTMzLjQ1OTg4LDI1NC4yOTIyOGMtOS42MjIzOSwxMC41ODE4MiAtMTkuNjU0NTgsMjcuODAyMjcgLTI4LjE3ODU0LDQ5Ljk2MzY5Yy0xNy4wNDc5MSw0NC4zMjM1OSAtMjguMjU3NzQsMTA4LjAyNjEzIC0yOC4yNTc3NCwxNzguNDY1NTRjMCwyNi42NDgwNSAyLjA1NTAxLDUxLjgxODI0IDQuOTcyODUsNzUuODUzNmMyNC4wMzUzNiwyLjkxNTg0IDQ5LjIwNTUxLDQuOTcyODUgNzUuODUzNTcsNC45NzI4NWM3MC40Mzk0MiwwIDEzNC4xNDE5OCwtMTEuMjA5ODMgMTc4LjQ2NTU3LC0yOC4yNTc3NGMyMi4xNjEzOCwtOC41MjM5NiAzOS4zODE4NywtMTguNTU2MTEgNDkuOTYzNjksLTI4LjE3ODVjMTAuNTgyNjEsLTkuNjIyOCAxNC4wNTAwNSwtMTcuNTM4MTUgMTQuMDUwMDUsLTI0LjM5MDJjMCwtMTM0LjE1ODk0IC0xMDguMzIwMzcsLTI0Mi40NzkyNyAtMjQyLjQ3OTMxLC0yNDIuNDc5MjdjLTYuODUyMDYsMCAtMTQuNzY3MzcsMy40Njc4NSAtMjQuMzkwMTcsMTQuMDUwMDV6TTMxNS4zNzA3Nyw0ODIuNzIxNTFjMCw2Ljg1MjA2IDMuNDY3ODUsMTQuNzY3NCAxNC4wNDgwNSwyNC4zOTAyYzEwLjU4MTgyLDkuNjIyMzkgMjcuODAyMjcsMTkuNjU0NTggNDkuOTYzNjksMjguMTc4NWMxNy4zODgxNyw2LjY4ODAxIDM4LjQyNDg4LDEyLjA4Nzk5IDYxLjAxNDY3LDE2LjY1NDY5Yy0yLjI1NTA2LC0yMi4yNTE1MiAtMy43ODY3MiwtNDUuMTgzMTkgLTMuNzg2NzIsLTY5LjIyMzRjMCwtNzQuNjM5OTkgMTEuNDIxMTksLTE0Mi4yMzcxMiAzMC45NDEyLC0xOTIuOTg4ODRjNS41NzU4MiwtMTQuNDk2MjMgMTIuMDE2NDYsLTI3LjIyODQzIDE5LjAyMjksLTM4LjgzNDY4Yy05OS4yNTQ0NSwzMC4zNTg4IC0xNzEuMjAzNzIsMTIyLjQ3ODcxIC0xNzEuMjAzNzIsMjMxLjgyMzU1ek00ODYuNTc0NDYsNzE0LjU0NTA1Yy03LjAwNjQ0LC0xMS42MDYyNSAtMTMuNDQ3MDgsLTI0LjMzODQ1IC0xOS4wMjI5LC0zOC44MzQ2OGMtOS4wOTYyMSwtMjMuNjUxNDMgLTE2LjIyNjczLC01MS4yNDUxOCAtMjEuNDY5MTMsLTgxLjIyMTI4Yy0yOS45NzY1MSwtNS4yNDIwMiAtNTcuNTY5ODMsLTEyLjM3MjU0IC04MS4yMjEyNSwtMjEuNDY5MWMtMTQuNDk2MjMsLTUuNTc1ODIgLTI3LjIyODQzLC0xMi4wMTY0NiAtMzguODM0NjgsLTE5LjAyMjkzYzIzLjQ2OTU3LDc2LjczMDE1IDgzLjgxODIyLDEzNy4wNzg0MiAxNjAuNTQ3OTYsMTYwLjU0Nzk5ek03ODkuNjczNTksNTUzLjk5NTA3Yy0xMS42MDYyOCw3LjAwNjQ0IC0yNC4zMzg0NSwxMy40NDcwOCAtMzguODM0NjgsMTkuMDIyOWMtNTAuNzUxNzUsMTkuNTE5NTcgLTExOC4zNDg4OCwzMC45NDExNyAtMTkyLjk4ODg3LDMwLjk0MTE3Yy0yNC4wNDAyMSwwIC00Ni45NzE4OCwtMS41Mjc2IC02OS4yMjMzNiwtMy43ODY3MmM0LjU2NjcsMjIuNTg5NzUgOS45NjY3MSw0My42MjY0OSAxNi42NTQ2OSw2MS4wMTQ2N2M4LjUyMzk2LDIyLjE2MTM4IDE4LjU1NjE0LDM5LjM4MTg3IDI4LjE3ODU0LDQ5Ljk2MzY5YzkuNjIyOCwxMC41ODI2MSAxNy41MzgxMiwxNC4wNTAwNSAyNC4zOTAxNywxNC4wNTAwNWMxMDkuMzQ0NDIsMCAyMDEuNDY0MzMsLTcxLjk0OTI3IDIzMS44MjM1NSwtMTcxLjIwMzcyeiIvPjwvZz48L2c+PC9zdmc+PCEtLXJvdGF0aW9uQ2VudGVyOjcwNy42ODk1MTY5NjIzNDM0OjU5NS40MDIzMjIzNjY5Njg1LS0+";
     // Raycast icon by me in Turbowarp SVG editor
     const raycastIcon = "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHdpZHRoPSIzNjAiIGhlaWdodD0iMzYwIiB2aWV3Qm94PSIwLDAsMzYwLDM2MCI+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTYwLDApIj48ZyBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIj48cGF0aCBkPSJNMTM4LjA3NjUxLDMwOS4yMjQxOGwtMjcuMzAwNjksLTI3LjMwMDY5bDI0Ni4yNjkzMywtMjQ2LjI2OTMzbDI3LjMwMDY5LDI3LjMwMDY5eiIgZmlsbC1vcGFjaXR5PSIwLjUwMTk2IiBmaWxsPSIjZmZmZmZmIi8+PHBhdGggZD0iTTM1Ny4wNDUxNiw2Mi45NTQ4NGMtNy41Mzg4NywtNy41Mzg4NyAtNy41Mzg4NywtMTkuNzYxODIgMCwtMjcuMzAwNjljNy41Mzg4NywtNy41Mzg4NyAxOS43NjE4MSwtNy41Mzg4NyAyNy4zMDA2OCwwLjAwMDAxYzcuNTM4ODcsNy41Mzg4NyA3LjUzODg4LDE5Ljc2MTgxIDAuMDAwMDEsMjcuMzAwNjhjLTcuNTM4ODcsNy41Mzg4NyAtMTkuNzYxODIsNy41Mzg4NyAtMjcuMzAwNjksMHoiIGZpbGw9IiNmZmZmZmYiLz48cGF0aCBkPSJNMTAwLjA4MzE5LDMxOS45MTY4MWMtMTMuNDQ0MjUsLTEzLjQ0NDI1IC0xMy40NDQyNSwtMzUuMjQxNyAwLC00OC42ODU5NWMxMy40NDQyNSwtMTMuNDQ0MjUgMzUuMjQxNjksLTEzLjQ0NDI0IDQ4LjY4NTk0LDAuMDAwMDFjMTMuNDQ0MjUsMTMuNDQ0MjUgMTMuNDQ0MjYsMzUuMjQxNjkgMC4wMDAwMSw0OC42ODU5NGMtMTMuNDQ0MjUsMTMuNDQ0MjUgLTM1LjI0MTcsMTMuNDQ0MjUgLTQ4LjY4NTk1LDB6IiBmaWxsPSIjZmZmZmZmIi8+PHBhdGggZD0iTTI0MCw2OC42MDl2LTM4LjYwOWgxMzAuNjk1NXYzOC42MDl6IiBmaWxsPSIjZmZmZmZmIi8+PHBhdGggZD0iTTM1MS4zOTEsNDkuMzA0NWgzOC42MDl2MTMwLjY5NTVoLTM4LjYwOXoiIGZpbGw9IiNmZmZmZmYiLz48cGF0aCBkPSJNMjI2LjM0OTY2LDYyLjk1NDg0Yy03LjUzODg3LC03LjUzODg3IC03LjUzODg3LC0xOS43NjE4MiAwLC0yNy4zMDA2OWM3LjUzODg3LC03LjUzODg3IDE5Ljc2MTgxLC03LjUzODg3IDI3LjMwMDY4LDAuMDAwMDFjNy41Mzg4Nyw3LjUzODg3IDcuNTM4ODgsMTkuNzYxODEgMC4wMDAwMSwyNy4zMDA2OGMtNy41Mzg4Nyw3LjUzODg3IC0xOS43NjE4Miw3LjUzODg3IC0yNy4zMDA2OSwweiIgZmlsbD0iI2ZmZmZmZiIvPjxwYXRoIGQ9Ik0zNTcuMDQ1MTYsMTkzLjY1MDM0Yy03LjUzODg3LC03LjUzODg3IC03LjUzODg3LC0xOS43NjE4MiAwLC0yNy4zMDA2OWM3LjUzODg3LC03LjUzODg3IDE5Ljc2MTgxLC03LjUzODg3IDI3LjMwMDY4LDAuMDAwMDFjNy41Mzg4Nyw3LjUzODg3IDcuNTM4ODgsMTkuNzYxODEgMC4wMDAwMSwyNy4zMDA2OGMtNy41Mzg4Nyw3LjUzODg3IC0xOS43NjE4Miw3LjUzODg3IC0yNy4zMDA2OSwweiIgZmlsbD0iI2ZmZmZmZiIvPjxwYXRoIGQ9Ik02MCwzNjB2LTM2MGgzNjB2MzYweiIgZmlsbD0ibm9uZSIvPjwvZz48L2c+PC9zdmc+PCEtLXJvdGF0aW9uQ2VudGVyOjE4MDoxODAtLT4=";
-    // Constraint icon from https://fontawesome.com/icons/link?f=classic&s=solid
-    const constraintIcon = "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHdpZHRoPSI1NzYiIGhlaWdodD0iNDQ4LjIiIHZpZXdCb3g9IjAsMCw1NzYsNDQ4LjIiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDQ4LDQ0KSI+PGcgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSJub25lIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiPjxwYXRoIGQ9Ik0zNzEuNSwyMGMtMTYuNiwwIC0zMi43LDQuNSAtNDYuOCwxMi43Yy0xNS44LC0xNiAtMzQuMiwtMjkuNCAtNTQuNSwtMzkuNWMyOC4yLC0yNCA2NC4xLC0zNy4yIDEwMS4zLC0zNy4yYzg2LjQsMCAxNTYuNSw3MCAxNTYuNSwxNTYuNWMwLDQxLjUgLTE2LjUsODEuMyAtNDUuOCwxMTAuNmwtNzEuMSw3MS4xYy0yOS4zLDI5LjMgLTY5LjEsNDUuOCAtMTEwLjYsNDUuOGMtODYuNCwwIC0xNTYuNSwtNzAgLTE1Ni41LC0xNTYuNWMwLC0xLjUgMCwtMyAwLjEsLTQuNWMwLjUsLTE3LjcgMTUuMiwtMzEuNiAzMi45LC0zMS4xYzE3LjcsMC41IDMxLjYsMTUuMiAzMS4xLDMyLjljMCwwLjkgMCwxLjggMCwyLjZjMCw1MS4xIDQxLjQsOTIuNSA5Mi41LDkyLjVjMjQuNSwwIDQ4LC05LjcgNjUuNCwtMjcuMWw3MS4xLC03MS4xYzE3LjMsLTE3LjMgMjcuMSwtNDAuOSAyNy4xLC02NS40YzAsLTUxLjEgLTQxLjQsLTkyLjUgLTkyLjUsLTkyLjV6TTIyNy4yLDk3LjNjLTEuOSwtMC44IC0zLjgsLTEuOSAtNS41LC0zLjFjLTEyLjYsLTYuNSAtMjcsLTEwLjIgLTQyLjEsLTEwLjJjLTI0LjUsMCAtNDgsOS43IC02NS40LDI3LjFsLTcxLjEsNzEuMWMtMTcuMywxNy4zIC0yNy4xLDQwLjkgLTI3LjEsNjUuNGMwLDUxLjEgNDEuNCw5Mi41IDkyLjUsOTIuNWMxNi41LDAgMzIuNiwtNC40IDQ2LjcsLTEyLjZjMTUuOCwxNiAzNC4yLDI5LjQgNTQuNiwzOS41Yy0yOC4yLDIzLjkgLTY0LDM3LjIgLTEwMS4zLDM3LjJjLTg2LjQsMCAtMTU2LjUsLTcwIC0xNTYuNSwtMTU2LjVjMCwtNDEuNSAxNi41LC04MS4zIDQ1LjgsLTExMC42bDcxLjEsLTcxLjFjMjkuMywtMjkuMyA2OS4xLC00NS44IDExMC42LC00NS44Yzg2LjYsMCAxNTYuNSw3MC42IDE1Ni41LDE1Ni45YzAsMS4zIDAsMi42IDAsMy45Yy0wLjQsMTcuNyAtMTUuMSwzMS42IC0zMi44LDMxLjJjLTE3LjcsLTAuNCAtMzEuNiwtMTUuMSAtMzEuMiwtMzIuOGMwLC0wLjggMCwtMS41IDAsLTIuM2MwLC0zMy43IC0xOCwtNjMuMyAtNDQuOCwtNzkuNnoiLz48L2c+PC9nPjwvc3ZnPjwhLS1yb3RhdGlvbkNlbnRlcjoyODg6MjI0LS0+";
 
     class AmmoPhysics {
       getInfo() {
@@ -1333,79 +1319,6 @@
                 },
               },
             },
-            "---",
-            {
-              blockType: "label",
-              text: Scratch.translate("Constraints"),
-            },
-            {
-              opcode: "addConstraint",
-              blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate(
-                "attach body [bodyA] to body [bodyB] using [type] constraint with name: [name] and enable collision [collide]"
-              ),
-              blockIconURI: constraintIcon,
-              arguments: {
-                type: {
-                  type: Scratch.ArgumentType.STRING,
-                  menu: "constraintMenu",
-                },
-                name: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: "constraint",
-                },
-                bodyA: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: "body A",
-                },
-                bodyB: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: "body B",
-                },
-                collide: {
-                  type: Scratch.ArgumentType.BOOLEAN,
-                  defaultValue: false,
-                },
-              },
-            },
-            {
-              opcode: "setConstraintLimits",
-              blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate(
-                "set constraint [constraint] limits to x: [x] y: [y] z: [z]"
-              ),
-              blockIconURI: constraintIcon,
-              arguments: {
-                constraint: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: "constraint",
-                },
-                x: {
-                  type: Scratch.ArgumentType.NUMBER,
-                  defaultValue: 0,
-                },
-                y: {
-                  type: Scratch.ArgumentType.NUMBER,
-                  defaultValue: 0,
-                },
-                z: {
-                  type: Scratch.ArgumentType.NUMBER,
-                  defaultValue: 0,
-                },
-              },
-            },
-            {
-              opcode: "removeConstraint",
-              blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate("remove constraint [name] from world"),
-              blockIconURI: constraintIcon,
-              arguments: {
-                name: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: "constraint",
-                },
-              },
-            },
           ],
           menus: {
             meshMenu: {
@@ -1539,27 +1452,6 @@
                 },
               ],
             },
-            constraintMenu: {
-              acceptReporters: false,
-              items: [
-                {
-                  text: Scratch.translate("ball constraint"),
-                  value: "btPoint2PointConstraint",
-                },
-                {
-                  text: Scratch.translate("hinge constraint"),
-                  value: "btHingeConstraint",
-                },
-                {
-                  text: Scratch.translate("fixed constraint"),
-                  value: "btFixedConstraint",
-                },
-                {
-                  text: Scratch.translate("slider"),
-                  value: "btSliderConstraint",
-                },
-              ],
-            },
             lists: {
               acceptReporters: false,
               items: "listsMenu",
@@ -1618,17 +1510,6 @@
           }
         }
         rays = {};
-
-        for (const key in constraints) {
-          if (Object.prototype.hasOwnProperty.call(constraints, key)) {
-            const constraint = constraints[key];
-            if (constraint) {
-              Ammo.destroy(constraint);
-              delete constraints[key];
-            }
-          }
-        }
-        constraints = {};
       }
 
       step() {
@@ -2398,174 +2279,7 @@
         }
       }
 
-      // TODO: compute local frames/pivots instead of world transformation
-      addConstraint({ type, name, bodyA, bodyB, collide }, { target } = {}) {
-        if (!bodies[bodyA] || !bodies[bodyB] || constraints[name]) return;
-      
-        const a = bodies[bodyA];
-        const b = bodies[bodyB];
-      
-        // world transforms
-        const transA = a.getCenterOfMassTransform();
-        const transB = b.getCenterOfMassTransform();
-      
-        // choose a world-frame for the constraint:
-        // if `target` (an object { x,y,z }) is provided use that, otherwise use center of B
-        const worldFrame = new Ammo.btTransform();
-        worldFrame.setIdentity();
-        if (target && typeof target.x === 'number') {
-          worldFrame.setOrigin(new Ammo.btVector3(target.x, target.y, target.z));
-          // no rotation -> identity; change if you want orientation from target
-        } else {
-          // use transform of body B as the world frame (common choice)
-          worldFrame.setOrigin(transB.getOrigin());
-          worldFrame.setRotation(transB.getRotation());
-        }
-      
-        // helper to compute frame in local coordinates: inv(bodyTransform) * worldFrame
-        function computeLocalFrame(bodyTransform) {
-          const inv = new Ammo.btTransform();
-          inv.setIdentity();
-          // copy bodyTransform into inv then invert (we don't mutate original)
-          inv.setOrigin(bodyTransform.getOrigin());
-          inv.setRotation(bodyTransform.getRotation());
-          inv.inverse();
-      
-          const localFrameTmp = inv.op_mul(worldFrame); // btTransform
-          // copy origin & rotation into a fresh btTransform (to avoid holding internals)
-          const frame = new Ammo.btTransform();
-          frame.setIdentity();
-          const o = localFrameTmp.getOrigin();
-          const r = localFrameTmp.getRotation();
-          frame.setOrigin(new Ammo.btVector3(o.x(), o.y(), o.z()));
-          frame.setRotation(new Ammo.btQuaternion(r.x(), r.y(), r.z(), r.w()));
-      
-          // cleanup temporaries we created
-          Ammo.destroy(inv);
-          // localFrameTmp is a new btTransform returned by op_mul; it is a wrapper around an internal object
-          // but we didn't create it via 'new' so don't destroy it; frame owns the copy we will use
-          return frame;
-        }
-      
-        let constraint = null;
-      
-        switch (type) {
-          case "btPoint2PointConstraint": {
-            // pivot in world space = worldFrame origin
-            const invA = new Ammo.btTransform();
-            invA.setIdentity();
-            invA.setOrigin(transA.getOrigin());
-            invA.setRotation(transA.getRotation());
-            invA.inverse();
-      
-            const invB = new Ammo.btTransform();
-            invB.setIdentity();
-            invB.setOrigin(transB.getOrigin());
-            invB.setRotation(transB.getRotation());
-            invB.inverse();
-      
-            const pivotWorld = worldFrame.getOrigin();
-            // compute pivot in local A and local B as new btVector3 copies
-            const tmpA = invA.op_mul(worldFrame).getOrigin();
-            const tmpB = invB.op_mul(worldFrame).getOrigin();
-      
-            const pivotInA = new Ammo.btVector3(tmpA.x(), tmpA.y(), tmpA.z());
-            const pivotInB = new Ammo.btVector3(tmpB.x(), tmpB.y(), tmpB.z());
-      
-            constraint = new Ammo.btPoint2PointConstraint(a, b, pivotInA, pivotInB);
-      
-            // cleanup
-            Ammo.destroy(invA);
-            Ammo.destroy(invB);
-            Ammo.destroy(pivotInA);
-            Ammo.destroy(pivotInB);
-      
-            break;
-          }
-      
-          case "btHingeConstraint": {
-            // create frames for each body such that the hinge frame is worldFrame
-            const frameInA = computeLocalFrame(transA);
-            const frameInB = computeLocalFrame(transB);
-      
-            constraint = new Ammo.btHingeConstraint(a, b, frameInA, frameInB, false);
-      
-            Ammo.destroy(frameInA);
-            Ammo.destroy(frameInB);
-            break;
-          }
-      
-          case "btSliderConstraint": {
-            // slider uses full frames
-            const frameInA = computeLocalFrame(transA);
-            const frameInB = computeLocalFrame(transB);
-      
-            constraint = new Ammo.btSliderConstraint(a, b, frameInA, frameInB, true);
-      
-            Ammo.destroy(frameInA);
-            Ammo.destroy(frameInB);
-            break;
-          }
-      
-          case "btFixedConstraint": {
-            const frameInA = computeLocalFrame(transA);
-            const frameInB = computeLocalFrame(transB);
-      
-            constraint = new Ammo.btFixedConstraint(a, b, frameInA, frameInB);
-      
-            Ammo.destroy(frameInA);
-            Ammo.destroy(frameInB);
-            break;
-          }
-      
-          default:
-            Ammo.destroy(worldFrame);
-            throw new Error(`Unknown constraint type: ${type}`);
-        }
-      
-        // add to world and store
-        world.addConstraint(constraint, !Scratch.Cast.toBoolean(collide));
-        constraints[name] = constraint;
-      
-        // cleanup
-        Ammo.destroy(worldFrame);
-      }      
-
-      setConstraintLimits({ constraint, x, y, z }, { target }) {
-        const c = constraints[constraint];
-        if (!c) return;
-
-        // Hinge: x = lowerAngle, y = upperAngle
-        if (c instanceof Ammo.btHingeConstraint) {
-          c.setLimit(x, y);
-          return;
-        }
-
-        // Slider: x = lowerLin, y = upperLin, z = lowerAng, assume upperAng = -lowerAng
-        if (c instanceof Ammo.btSliderConstraint) {
-          c.setLowerLinLimit(x);
-          c.setUpperLinLimit(y);
-          c.setLowerAngLimit(z);
-          c.setUpperAngLimit(-z);
-          return;
-        }
-
-        console.warn(`Attempted to set limits of unsupporting or nonexistent constraint "${constraint} in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name + '"'}`);
-      }
-
-      removeConstraint({ name }, { target }) {
-        if (constraints[name]) {
-          world.removeConstraint(constraints[name]);
-          Ammo.destroy(constraints[name]);
-          delete constraints[name];
-        } else {
-          console.warn(
-            `Attempted to remove nonexistent constraint "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name + '"'}`
-          );
-        }
-      }
     }
-
     Scratch.extensions.register(new AmmoPhysics());
   })
   .catch((error) => {
