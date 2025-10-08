@@ -181,23 +181,6 @@
       return points;
     }
 
-    function processFaces(list) {
-      const faces = [];
-      const array = list;
-      if (array) {
-        for (let i = 0; i < array.length; i++) {
-          const item = array[i]?.split(" ")?.map((n) => Scratch.Cast.toNumber(n))
-          if (item.length !== 3) {
-            console.warn(`Attempted to process non-triangulated face list "${list}"`);
-            return;
-          } else {
-            faces.push(item);
-          }
-        }
-        return faces;
-      }
-    }
-
     function createTriangleMesh(points, faceList) {
       const mesh = new Ammo.btTriangleMesh();
 
@@ -233,6 +216,7 @@
     function processOBJ(objList) {
       let vertices = objList.filter(line => line.startsWith("v "));
       if (vertices) vertices = vertices.map(line => line.split("v ")[1]);
+
       let faces = objList.filter(line => line.startsWith("f "));
       if (faces) faces = faces.map(line => line.split("f ")[1]);
 
@@ -1747,24 +1731,20 @@
             delete bodies[name];
           }
         }
-        const list = target.lookupVariableByNameAndType(vertices, "list");
+
+        let list;
+        if (target.lookupVariableByNameAndType(vertices, "list")) {
+          list = processVertices(target.lookupVariableByNameAndType(vertices, "list").value);
+        } else {
+          console.warn(`Attempted to create convex hull body from nonexistent list "${vertices}"`);
+          return;
+        }
+
+        console.log(list);
 
         if (list) {
-          const points = [];
-          let thisItem;
-
-          // TODO: make it use processVertices()
-
-          for (let i = 0; i < list.value.length; i++) {
-            thisItem = list.value[i].split(" "); //* space-delimited, for more use this regex: "/[\s,|, ]+/"
-            points.push(
-              new Ammo.btVector3(thisItem[0], thisItem[1], thisItem[2]));
-          }
-
           const shape = new Ammo.btConvexHullShape();
-          for (let i = 0; i < points.length; i++) {
-            shape.addPoint(points[i], true);
-          }
+          list.forEach(i => shape.addPoint(i, true));
 
           const localInertia = new Ammo.btVector3(0, 0, 0);
           if (mass > 0) shape.calculateLocalInertia(mass, localInertia);
@@ -1781,7 +1761,7 @@
           bodies[name] = body;
           bodies[name].collisions = [];
         } else {
-          console.warn(`Attempted to create convex hull body from nonexistent vertex list ${vertices}`);
+          console.warn(`Attempted to create convex hull body from invalid vertex list ${vertices}`);
         }
       }
 
@@ -1810,7 +1790,6 @@
         }
 
         let shape;
-        // TODO: refactor createTriangleMesh so that the face list is processed into an array before being entered (e.g, just like processVertices)
         const faceList = target.lookupVariableByNameAndType(faces, "list").value;
         const mesh = createTriangleMesh(points, faceList);
 
@@ -1832,12 +1811,12 @@
         const motionState = new Ammo.btDefaultMotionState(transform);
         const localInertia = new Ammo.btVector3(0, 0, 0);
 
+        if (mass != 0 && type == "btBvhTriangleMeshShape") mass = 0; // ensure static body with BVH accelerated meshes.
+
         if (mass > 0 && shape.calculateLocalInertia) {
           // only for GImpactMeshes
           shape.calculateLocalInertia(mass, localInertia);
         }
-
-        if (mass != 0 && type == "btBvhTriangleMeshShape") mass = 0; // ensure static body with BVH accelerated meshes.
 
         const rbInfo = new Ammo.btRigidBodyConstructionInfo(
           mass,
@@ -1870,16 +1849,81 @@
           }
         }
 
+        let objFile;
         if (obj) {
-          const objFile = processOBJ(target.lookupVariableByNameAndType(obj, "list").value);
-          if (objFile) {
-            console.log(objFile.vertices, objFile.faces);
-          } else {
-            console.warn(`Attempted to create OBJ body from invalid OBJ list "${obj}"`);
-          }
+          objFile = processOBJ(target.lookupVariableByNameAndType(obj, "list").value);
         } else {
           console.warn(`Attempted to create OBJ body from nonexistent list "${obj}"`);
           return;
+        }
+
+        if (type == "btConvexHullShape") {
+          const points = processVertices(objFile.vertices);
+          const shape = new Ammo.btConvexHullShape();
+          points.forEach(i => shape.addPoint(i, true));
+
+          const localInertia = new Ammo.btVector3(0, 0, 0);
+          if (mass > 0) shape.calculateLocalInertia(mass, localInertia);
+
+          const transform = new Ammo.btTransform();
+          transform.setIdentity();
+          transform.setOrigin(new Ammo.btVector3(0, 0, 0));
+
+          const motionState = new Ammo.btDefaultMotionState(transform);
+          const rbInfo = new Ammo.btRigidBodyConstructionInfo( mass, motionState, shape, localInertia);
+          const body = new Ammo.btRigidBody(rbInfo);
+          body.userData = name;
+          world.addRigidBody(body);
+          bodies[name] = body;
+          bodies[name].collisions = [];
+        } else {
+          const points = processVertices(objFile.vertices);
+
+          if (!points) {
+            console.warn(`Attempted to create mesh body from invalid vertex list "${vertices}"`);
+            return;
+          }
+
+          let shape;
+          const mesh = createTriangleMesh(points, objFile.faces);
+
+          if (!mesh) {
+            console.warn(`Attempted to create mesh body from non-triangulated face list "${faces}"`);
+            return;
+          }
+
+          if (type == "btBvhTriangleMeshShape") {
+            shape = new Ammo[type](mesh, true); // useQuantizedAabbCompression true
+          } else {
+            shape = new Ammo[type](mesh); // ordinary btGImpactMeshShape
+            shape.updateBound();
+          }
+
+          const transform = new Ammo.btTransform();
+          transform.setIdentity();
+          transform.setOrigin(new Ammo.btVector3(0, 0, 0));
+          const motionState = new Ammo.btDefaultMotionState(transform);
+          const localInertia = new Ammo.btVector3(0, 0, 0);
+
+          if (mass != 0 && type == "btBvhTriangleMeshShape") mass = 0; // ensure static body with BVH accelerated meshes.
+
+          if (mass > 0 && shape.calculateLocalInertia) {
+            // only for GImpactMeshes
+            shape.calculateLocalInertia(mass, localInertia);
+          }
+
+          const rbInfo = new Ammo.btRigidBodyConstructionInfo(
+            mass,
+            motionState,
+            shape,
+            localInertia
+          );
+          const body = new Ammo.btRigidBody(rbInfo);
+
+          body.userData = name;
+          world.addRigidBody(body);
+          bodies[name] = body;
+          bodies[name].collisions = [];
         }
       }
 
