@@ -1,6 +1,6 @@
 // Name: Ammo Physics
 // ID: masterMathAmmoPhysics
-// Description: Advanced three dimentional rigid body physics and collision detection.
+// Description: Advanced three dimensional rigid body physics and collision detection.
 // By: -MasterMath- <https://scratch.mit.edu/users/-MasterMath-/>
 // License: MPL-2.0 and MIT
 
@@ -152,61 +152,66 @@
     }
 
     function shapeWarning(target, name) {
-      console.warn(
-        `Attempted to add child shape to nonexistent compound body "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`
-      );
+      console.warn(`Attempted to add child shape to nonexistent compound body "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`);
     }
 
     function processVertices(list) {
       const points = [];
       const array = list;
       if (array) {
-        if (array.value) {
-          // assuming a Scratch list
-          for (let i = 0; i < array.value.length; i++) {
-            if (array.value[i] != "") {
-              const item = array.value[i].split(" ");
-              if (item.length !== 3) {
-                console.warn(
-                  `Attempted to process invalid vertex list "${list}"`
-                );
-                return;
-              }
-              points.push(
-                new Ammo.btVector3(
-                  Scratch.Cast.toNumber(item[0]),
-                  Scratch.Cast.toNumber(item[1]),
-                  Scratch.Cast.toNumber(item[2])
-                )
-              );
+        for (let i = 0; i < array.length; i++) {
+          if (array[i] != "") {
+            const item = array[i].split(" ");
+            if (item.length !== 3) {
+              console.warn(`Attempted to process invalid vertex list "${list}"`);
+              return;
             }
+            points.push(
+              new Ammo.btVector3(
+                Scratch.Cast.toNumber(item[0]),
+                Scratch.Cast.toNumber(item[1]),
+                Scratch.Cast.toNumber(item[2])
+              )
+            );
           }
         }
       } else {
-        console.warn(
-          `Attempted to process nonexistent vertex list "${list}"`
-        );
+        console.warn(`Attempted to process nonexistent vertex list "${list}"`);
       }
       return points;
+    }
+
+    function processFaces(list) {
+      const faces = [];
+      const array = list;
+      if (array) {
+        for (let i = 0; i < array.length; i++) {
+          const item = array[i]?.split(" ")?.map((n) => Scratch.Cast.toNumber(n))
+          if (item.length !== 3) {
+            console.warn(`Attempted to process non-triangulated face list "${list}"`);
+            return;
+          } else {
+            faces.push(item);
+          }
+        }
+        return faces;
+      }
     }
 
     function createTriangleMesh(points, faceList) {
       const mesh = new Ammo.btTriangleMesh();
 
       if (faceList) {
-        for (let i = 0; i < faceList.value.length; i++) {
-          if (faceList.value[i] != "") {
-            const indices = faceList.value[i]
-              ?.split(" ")
-              ?.map((n) => Scratch.Cast.toNumber(n));
+        for (let i = 0; i < faceList.length; i++) {
+          if (faceList[i] != "") {
+            const indices = faceList[i]?.split(" ")?.map((n) => Scratch.Cast.toNumber(n));
             // * validate triangulated mesh
             if (indices.length !== 3) {
-              console.warn(
-                `Attempted to process non-triangulated face list "${faceList}"`
-              );
+              console.warn(`Attempted to process non-triangulated face list "${faceList}"`);
               return;
             }
 
+            // TODO: this doesn't validate the points list, only the vertex list.
             const a = points[indices[0]];
             const b = points[indices[1]];
             const c = points[indices[2]];
@@ -223,6 +228,19 @@
         }
       }
       return mesh;
+    }
+
+    function processOBJ(objList) {
+      let vertices = objList.filter(line => line.startsWith("v "));
+      if (vertices) vertices = vertices.map(line => line.split("v ")[1]);
+      let faces = objList.filter(line => line.startsWith("f "));
+      if (faces) faces = faces.map(line => line.split("f ")[1]);
+
+      if (vertices.every(item => item.split(" ")?.length == 3) && faces.every(item => item.split(" ")?.length == 3)) {
+        return { vertices, faces };
+      } else {
+        return;
+      }
     }
 
     let collisionConfig = new Ammo.btDefaultCollisionConfiguration();
@@ -314,13 +332,12 @@
     // Constraint icon from https://fontawesome.com/icons/link?f=classic&s=solid
     const constraintIcon = "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHdpZHRoPSI1NzYiIGhlaWdodD0iNDQ4LjIiIHZpZXdCb3g9IjAsMCw1NzYsNDQ4LjIiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDQ4LDQ0KSI+PGcgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSJub25lIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiPjxwYXRoIGQ9Ik0zNzEuNSwyMGMtMTYuNiwwIC0zMi43LDQuNSAtNDYuOCwxMi43Yy0xNS44LC0xNiAtMzQuMiwtMjkuNCAtNTQuNSwtMzkuNWMyOC4yLC0yNCA2NC4xLC0zNy4yIDEwMS4zLC0zNy4yYzg2LjQsMCAxNTYuNSw3MCAxNTYuNSwxNTYuNWMwLDQxLjUgLTE2LjUsODEuMyAtNDUuOCwxMTAuNmwtNzEuMSw3MS4xYy0yOS4zLDI5LjMgLTY5LjEsNDUuOCAtMTEwLjYsNDUuOGMtODYuNCwwIC0xNTYuNSwtNzAgLTE1Ni41LC0xNTYuNWMwLC0xLjUgMCwtMyAwLjEsLTQuNWMwLjUsLTE3LjcgMTUuMiwtMzEuNiAzMi45LC0zMS4xYzE3LjcsMC41IDMxLjYsMTUuMiAzMS4xLDMyLjljMCwwLjkgMCwxLjggMCwyLjZjMCw1MS4xIDQxLjQsOTIuNSA5Mi41LDkyLjVjMjQuNSwwIDQ4LC05LjcgNjUuNCwtMjcuMWw3MS4xLC03MS4xYzE3LjMsLTE3LjMgMjcuMSwtNDAuOSAyNy4xLC02NS40YzAsLTUxLjEgLTQxLjQsLTkyLjUgLTkyLjUsLTkyLjV6TTIyNy4yLDk3LjNjLTEuOSwtMC44IC0zLjgsLTEuOSAtNS41LC0zLjFjLTEyLjYsLTYuNSAtMjcsLTEwLjIgLTQyLjEsLTEwLjJjLTI0LjUsMCAtNDgsOS43IC02NS40LDI3LjFsLTcxLjEsNzEuMWMtMTcuMywxNy4zIC0yNy4xLDQwLjkgLTI3LjEsNjUuNGMwLDUxLjEgNDEuNCw5Mi41IDkyLjUsOTIuNWMxNi41LDAgMzIuNiwtNC40IDQ2LjcsLTEyLjZjMTUuOCwxNiAzNC4yLDI5LjQgNTQuNiwzOS41Yy0yOC4yLDIzLjkgLTY0LDM3LjIgLTEwMS4zLDM3LjJjLTg2LjQsMCAtMTU2LjUsLTcwIC0xNTYuNSwtMTU2LjVjMCwtNDEuNSAxNi41LC04MS4zIDQ1LjgsLTExMC42bDcxLjEsLTcxLjFjMjkuMywtMjkuMyA2OS4xLC00NS44IDExMC42LC00NS44Yzg2LjYsMCAxNTYuNSw3MC42IDE1Ni41LDE1Ni45YzAsMS4zIDAsMi42IDAsMy45Yy0wLjQsMTcuNyAtMTUuMSwzMS42IC0zMi44LDMxLjJjLTE3LjcsLTAuNCAtMzEuNiwtMTUuMSAtMzEuMiwtMzIuOGMwLC0wLjggMCwtMS41IDAsLTIuM2MwLC0zMy43IC0xOCwtNjMuMyAtNDQuOCwtNzkuNnoiLz48L2c+PC9nPjwvc3ZnPjwhLS1yb3RhdGlvbkNlbnRlcjoyODg6MjI0LS0+";
 
-    //* NOTE TO SELF: @s_federici <https://scratch.mit.edu/users/s_federici> and @costc075202 <https://scratch.mit.edu/users/costc075202> want to know when this is finished.
-
     class AmmoPhysics {
       getInfo() {
         return {
           id: "masterMathAmmoPhysics",
           name: Scratch.translate("Ammo Physics"),
+          docsURI: "https://extensions.turbowarp.org/MasterMath/AmmoPhysics",
           blocks: [
             {
               blockType: "label",
@@ -379,6 +396,7 @@
             {
               opcode: "createBoxBody",
               blockType: Scratch.BlockType.COMMAND,
+              // TODO: FIX THE MESS PRETTIER CREATED
               text: Scratch.translate(
                 "create box body with name: [name] mass: [mass] size: [x] [y] [z]"
               ),
@@ -409,9 +427,7 @@
             {
               opcode: "createSphereBody",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate(
-                "create sphere body with name: [name] mass: [mass] radius: [radius]"
-              ),
+              text: Scratch.translate("create sphere body with name: [name] mass: [mass] radius: [radius]"),
               blockIconURI: sphereIcon,
               arguments: {
                 name: {
@@ -431,9 +447,7 @@
             {
               opcode: "createCylinderBody",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate(
-                "create cylinder body with name: [name] mass: [mass] radius: [radius] height: [height]"
-              ),
+              text: Scratch.translate("create cylinder body with name: [name] mass: [mass] radius: [radius] height: [height]"),
               blockIconURI: cylinderIcon,
               arguments: {
                 name: {
@@ -457,9 +471,7 @@
             {
               opcode: "createConeBody",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate(
-                "create cone body with name: [name] mass: [mass] radius: [radius] height: [height]"
-              ),
+              text: Scratch.translate("create cone body with name: [name] mass: [mass] radius: [radius] height: [height]"),
               blockIconURI: coneIcon,
               arguments: {
                 name: {
@@ -483,9 +495,7 @@
             {
               opcode: "createCapsuleBody",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate(
-                "create capsule body with name: [name] mass: [mass] radius: [radius] height: [height]"
-              ),
+              text: Scratch.translate("create capsule body with name: [name] mass: [mass] radius: [radius] height: [height]"),
               blockIconURI: capsuleIcon,
               arguments: {
                 name: {
@@ -509,9 +519,7 @@
             {
               opcode: "createHullBody",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate(
-                "create convex hull body with name: [name] mass: [mass] from vertices: [vertices]"
-              ),
+              text: Scratch.translate("create convex hull body with name: [name] mass: [mass] from vertices: [vertices]"),
               blockIconURI: meshIcon,
               arguments: {
                 name: {
@@ -531,9 +539,7 @@
             {
               opcode: "createMeshBody",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate(
-                "create [type] mesh body with name: [name] mass: [mass] from vertices: [vertices] faces: [faces]"
-              ),
+              text: Scratch.translate("create [type] mesh body with name: [name] mass: [mass] from vertices: [vertices] faces: [faces]"),
               blockIconURI: meshIcon,
               arguments: {
                 type: {
@@ -558,13 +564,35 @@
                 },
               },
             },
+            {
+              opcode: "createOBJBody",
+              blockType: Scratch.BlockType.COMMAND,
+              text: Scratch.translate("create [type] mesh body with name: [name] mass: [mass] from OBJ: [obj]"),
+              blockIconURI: meshIcon,
+              arguments: {
+                type: {
+                  type: Scratch.ArgumentType.STRING,
+                  menu: "objMeshMenu",
+                },
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: "body",
+                },
+                mass: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 5,
+                },
+                obj: {
+                  type: Scratch.ArgumentType.STRING,
+                  menu: "lists",
+                },
+              },
+            },
             "---",
             {
               opcode: "createCompoundShape",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate(
-                "create compound shape with name: [name]"
-              ),
+              text: Scratch.translate("create compound shape with name: [name]"),
               blockIconURI: compoundIcon,
               arguments: {
                 name: {
@@ -576,9 +604,7 @@
             {
               opcode: "compBodyAddBox",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate(
-                "[IMAGE] add box shape with size: [x] [y] [z] to compound shape [name] at x: [x1] y: [y1] z: [z1] with rotation x: [x2] y: [y2] z: [z2]"
-              ),
+              text: Scratch.translate("[IMAGE] add box shape with size: [x] [y] [z] to compound shape [name] at x: [x1] y: [y1] z: [z1] with rotation x: [x2] y: [y2] z: [z2]"),
               blockIconURI: compoundIcon,
               arguments: {
                 IMAGE: {
@@ -630,9 +656,7 @@
             {
               opcode: "compBodyAddSphere",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate(
-                "[IMAGE] add sphere shape with radius: [radius] to compound shape [name] at x: [x1] y: [y1] z: [z1] with rotation x: [x2] y: [y2] z: [z2]"
-              ),
+              text: Scratch.translate("[IMAGE] add sphere shape with radius: [radius] to compound shape [name] at x: [x1] y: [y1] z: [z1] with rotation x: [x2] y: [y2] z: [z2]"),
               blockIconURI: compoundIcon,
               arguments: {
                 IMAGE: {
@@ -676,9 +700,7 @@
             {
               opcode: "compBodyAddCylinder",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate(
-                "[IMAGE] add cylinder shape with radius: [radius] and height: [height] to compound shape [name] at x: [x1] y: [y1] z: [z1] with rotation x: [x2] y: [y2] z: [z2]"
-              ),
+              text: Scratch.translate("[IMAGE] add cylinder shape with radius: [radius] and height: [height] to compound shape [name] at x: [x1] y: [y1] z: [z1] with rotation x: [x2] y: [y2] z: [z2]"),
               blockIconURI: compoundIcon,
               arguments: {
                 IMAGE: {
@@ -726,9 +748,7 @@
             {
               opcode: "compBodyAddCone",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate(
-                "[IMAGE] add cone shape with radius: [radius] and height: [height] to compound shape [name] at x: [x1] y: [y1] z: [z1] with rotation x: [x2] y: [y2] z: [z2]"
-              ),
+              text: Scratch.translate("[IMAGE] add cone shape with radius: [radius] and height: [height] to compound shape [name] at x: [x1] y: [y1] z: [z1] with rotation x: [x2] y: [y2] z: [z2]"),
               blockIconURI: compoundIcon,
               arguments: {
                 IMAGE: {
@@ -776,9 +796,7 @@
             {
               opcode: "compBodyAddCapsule",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate(
-                "[IMAGE] add capsule shape with radius: [radius] and height: [height] to compound shape [name] at x: [x1] y: [y1] z: [z1] with rotation x: [x2] y: [y2] z: [z2]"
-              ),
+              text: Scratch.translate("[IMAGE] add capsule shape with radius: [radius] and height: [height] to compound shape [name] at x: [x1] y: [y1] z: [z1] with rotation x: [x2] y: [y2] z: [z2]"),
               blockIconURI: compoundIcon,
               arguments: {
                 IMAGE: {
@@ -827,9 +845,7 @@
             {
               opcode: "createCompoundBody",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate(
-                "create rigid body from compound shape [name] with mass [mass]"
-              ),
+              text: Scratch.translate("create rigid body from compound shape [name] with mass [mass]"),
               blockIconURI: compoundIcon,
               arguments: {
                 name: {
@@ -845,9 +861,7 @@
             {
               opcode: "setPhysicalMaterial",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate(
-                "set [property] of body [name] to [value]"
-              ),
+              text: Scratch.translate("set [property] of body [name] to [value]"),
               arguments: {
                 property: {
                   type: Scratch.ArgumentType.STRING,
@@ -866,9 +880,7 @@
             {
               opcode: "setBodyGravity",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate(
-                "set gravity of [body] to x: [x] y: [y] z: [z]"
-              ),
+              text: Scratch.translate("set gravity of [body] to x: [x] y: [y] z: [z]"),
               arguments: {
                 body: {
                   type: Scratch.ArgumentType.STRING,
@@ -1741,11 +1753,12 @@
           const points = [];
           let thisItem;
 
+          // TODO: make it use processVertices()
+
           for (let i = 0; i < list.value.length; i++) {
             thisItem = list.value[i].split(" "); //* space-delimited, for more use this regex: "/[\s,|, ]+/"
             points.push(
-              new Ammo.btVector3(thisItem[0], thisItem[1], thisItem[2])
-            );
+              new Ammo.btVector3(thisItem[0], thisItem[1], thisItem[2]));
           }
 
           const shape = new Ammo.btConvexHullShape();
@@ -1761,21 +1774,14 @@
           transform.setOrigin(new Ammo.btVector3(0, 0, 0));
 
           const motionState = new Ammo.btDefaultMotionState(transform);
-          const rbInfo = new Ammo.btRigidBodyConstructionInfo(
-            mass,
-            motionState,
-            shape,
-            localInertia
-          );
+          const rbInfo = new Ammo.btRigidBodyConstructionInfo( mass, motionState, shape, localInertia);
           const body = new Ammo.btRigidBody(rbInfo);
           body.userData = name;
           world.addRigidBody(body);
           bodies[name] = body;
           bodies[name].collisions = [];
         } else {
-          console.warn(
-            `Attempted to create convex hull body from nonexistent vertex list ${vertices}`
-          );
+          console.warn(`Attempted to create convex hull body from nonexistent vertex list ${vertices}`);
         }
       }
 
@@ -1783,6 +1789,7 @@
         type = Cast.toString(type);
         name = Cast.toString(name);
         mass = Cast.toNumber(mass);
+
         if (bodies[name]) {
           const body = bodies[name];
           if (body) {
@@ -1795,25 +1802,20 @@
           }
         }
         // get the vertices from the list
-        const points = processVertices(
-          target.lookupVariableByNameAndType(vertices, "list")
-        );
+        const points = processVertices(target.lookupVariableByNameAndType(vertices, "list").value);
 
         if (!points) {
-          console.warn(
-            `Attempted to create mesh body from invalid vertex list "${vertices}"`
-          );
+          console.warn(`Attempted to create mesh body from invalid vertex list "${vertices}"`);
           return;
         }
 
         let shape;
-        const faceList = target.lookupVariableByNameAndType(faces, "list");
+        // TODO: refactor createTriangleMesh so that the face list is processed into an array before being entered (e.g, just like processVertices)
+        const faceList = target.lookupVariableByNameAndType(faces, "list").value;
         const mesh = createTriangleMesh(points, faceList);
 
         if (!mesh) {
-          console.warn(
-            `Attempted to create mesh body from non-triangulated face list "${faces}"`
-          );
+          console.warn(`Attempted to create mesh body from non-triangulated face list "${faces}"`);
           return;
         }
 
@@ -1851,6 +1853,36 @@
         bodies[name].collisions = [];
       }
 
+      createOBJBody({ type, name, mass, obj }, { target }) {
+        type = Cast.toString(type);
+        name = Cast.toString(name);
+        mass = Cast.toNumber(mass);
+
+        if (bodies[name]) {
+          const body = bodies[name];
+          if (body) {
+            world.removeRigidBody(body);
+            world.removeCollisionObject(body);
+            Ammo.destroy(body.getMotionState());
+            Ammo.destroy(body.getCollisionShape());
+            Ammo.destroy(body);
+            delete bodies[name];
+          }
+        }
+
+        if (obj) {
+          const objFile = processOBJ(target.lookupVariableByNameAndType(obj, "list").value);
+          if (objFile) {
+            console.log(objFile.vertices, objFile.faces);
+          } else {
+            console.warn(`Attempted to create OBJ body from invalid OBJ list "${obj}"`);
+          }
+        } else {
+          console.warn(`Attempted to create OBJ body from nonexistent list "${obj}"`);
+          return;
+        }
+      }
+
       createCompoundShape(name) {
         name = Cast.toString(name);
         if (compoundShapes[name]) {
@@ -1873,98 +1905,39 @@
 
       compBodyAddBox({ x, y, z, name, x1, y1, z1, x2, y2, z2 }, { target }) {
         if (compoundShapes[name]) {
-          addCompoundShape(
-            name,
-            new Ammo.btBoxShape(new Ammo.btVector3(x / 2, y / 2, z / 2)),
-            x1,
-            y1,
-            z1,
-            x2,
-            y2,
-            z2
-          );
+          addCompoundShape(name, new Ammo.btBoxShape(new Ammo.btVector3(x / 2, y / 2, z / 2)), x1, y1, z1, x2, y2, z2);
         } else {
           shapeWarning(target, name);
         }
       }
 
-      compBodyAddSphere(
-        { radius, name, x1, y1, z1, x2, y2, z2 },
-        { target }
-      ) {
+      compBodyAddSphere({ radius, name, x1, y1, z1, x2, y2, z2 }, { target }) {
         if (compoundShapes[name]) {
-          addCompoundShape(
-            name,
-            new Ammo.btSphereShape(radius),
-            x1,
-            y1,
-            z1,
-            x2,
-            y2,
-            z2
-          );
+          addCompoundShape(name, new Ammo.btSphereShape(radius), x1, y1, z1, x2, y2, z2);
         } else {
           shapeWarning(target, name);
         }
       }
 
-      compBodyAddCylinder(
-        { radius, height, name, x1, y1, z1, x2, y2, z2 },
-        { target }
-      ) {
+      compBodyAddCylinder({ radius, height, name, x1, y1, z1, x2, y2, z2 }, { target }) {
         if (compoundShapes[name]) {
-          addCompoundShape(
-            name,
-            new Ammo.btCylinderShape(
-              new Ammo.btVector3(radius, height / 2, radius)
-            ),
-            x1,
-            y1,
-            z1,
-            x2,
-            y2,
-            z2
-          );
+          addCompoundShape(name, new Ammo.btCylinderShape(new Ammo.btVector3(radius, height / 2, radius)), x1, y1, z1, x2, y2, z2);
         } else {
           shapeWarning(target, name);
         }
       }
 
-      compBodyAddCone(
-        { radius, height, name, x1, y1, z1, x2, y2, z2 },
-        { target }
-      ) {
+      compBodyAddCone({ radius, height, name, x1, y1, z1, x2, y2, z2 }, { target }) {
         if (compoundShapes[name]) {
-          addCompoundShape(
-            name,
-            new Ammo.btConeShape(radius, height),
-            x1,
-            y1,
-            z1,
-            x2,
-            y2,
-            z2
-          );
+          addCompoundShape(name, new Ammo.btConeShape(radius, height), x1, y1, z1, x2, y2, z2);
         } else {
           shapeWarning(target, name);
         }
       }
 
-      compBodyAddCapsule(
-        { radius, height, name, x1, y1, z1, x2, y2, z2 },
-        { target }
-      ) {
+      compBodyAddCapsule({ radius, height, name, x1, y1, z1, x2, y2, z2 }, { target }) {
         if (compoundShapes[name]) {
-          addCompoundShape(
-            name,
-            new Ammo.btCapsuleShape(radius, height + 2 * radius),
-            x1,
-            y1,
-            z1,
-            x2,
-            y2,
-            z2
-          );
+          addCompoundShape(name, new Ammo.btCapsuleShape(radius, height + 2 * radius), x1, y1, z1, x2, y2, z2);
         } else {
           shapeWarning(target, name);
         }
@@ -1999,9 +1972,7 @@
           Ammo.destroy(localInertia);
           Ammo.destroy(startTransform);
         } else {
-          console.warn(
-            `Attempted to realize nonexistent compound body "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`
-          );
+          console.warn(`Attempted to realize nonexistent compound body "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`);
         }
       }
 
@@ -2011,9 +1982,7 @@
           // property can only be "setFriction" or "setRestitution", matching function names
           bodies[name][Cast.toString(property)](Cast.toNumber(value));
         } else {
-          console.warn(
-            `Attempted to set material of nonexistent body "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`
-          );
+          console.warn(`Attempted to set material of nonexistent body "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`);
         }
       }
 
@@ -2028,9 +1997,7 @@
           bodies[body].setGravity(gravity);
           Ammo.destroy(gravity);
         } else {
-          console.warn(
-            `Attempted to set gravity of nonexistent body "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`
-          );
+          console.warn(`Attempted to set gravity of nonexistent body "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`);
         }
       }
 
@@ -2047,9 +2014,7 @@
             delete bodies[name];
           }
         } else {
-          console.warn(
-            `Attempted to delete nonexistent body "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`
-          );
+          console.warn(`Attempted to delete nonexistent body "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`);
         }
       }
 
@@ -2083,9 +2048,7 @@
           bodies[name].getMotionState().setWorldTransform(tempTransform);
           Ammo.destroy(tempTransform);
         } else {
-          console.warn(
-            `Attempted to set transformation of nonexistent body "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`
-          );
+          console.warn(`Attempted to set transformation of nonexistent body "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`);
         }
       }
 
@@ -2138,9 +2101,7 @@
           Ammo.destroy(tempTransform);
           Ammo.destory(newPos);
         } else {
-          console.warn(
-            `Attempted to change transformation of nonexistent body "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`
-          );
+          console.warn(`Attempted to change transformation of nonexistent body "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`);
         }
       }
 
@@ -2162,9 +2123,7 @@
 
           Ammo.destroy(newTransform);
         } else {
-          console.warn(
-            `Attempted to get transformation of nonexistent body "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`
-          );
+          console.warn(`Attempted to get transformation of nonexistent body "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`);
         }
       }
 
@@ -2183,9 +2142,7 @@
           bodies[name].forceActivationState(1);
           bodies[name].activate(true);
         } else {
-          console.warn(
-            `Attempted to toggle collision response of nonexistent body "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`
-          );
+          console.warn(`Attempted to toggle collision response of nonexistent body "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`);
         }
       }
 
@@ -2302,9 +2259,7 @@
           }
           return null;
         } else {
-          console.warn(
-            `Attempted to get properties of nonexistent ray "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`
-          );
+          console.warn(`Attempted to get properties of nonexistent ray "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`);
         }
       }
 
@@ -2320,14 +2275,10 @@
               ).userData
             );
           } else {
-            console.warn(
-              `Attempted to detect if nonexistent body "${body}" was touching ray "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`
-            );
+            console.warn(`Attempted to detect if nonexistent body "${body}" was touching ray "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`);
           }
         } else {
-          console.warn(
-            `Attempted to get body touching nonexistent ray "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`
-          );
+          console.warn(`Attempted to get body touching nonexistent ray "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`);
         }
       }
 
@@ -2337,9 +2288,7 @@
           Ammo.destroy(rays[name]);
           delete rays[name];
         } else {
-          console.warn(
-            `Attempted to delete nonexistent ray "${name}" in ${target.isStage ? "Stage" : `Sprite "${target.sprite.name}"`}`
-          );
+          console.warn(`Attempted to delete nonexistent ray "${name}" in ${target.isStage ? "Stage" : `Sprite "${target.sprite.name}"`}`);
         }
       }
 
@@ -2361,9 +2310,7 @@
           Ammo.destroy(force);
           Ammo.destroy(offset);
         } else {
-          console.warn(
-            `Attempted to apply force on nonexistent body "${name}" in ${target.isStage ? "Stage" : `Sprite "${target.sprite.name}"`}`
-          );
+          console.warn(`Attempted to apply force on nonexistent body "${name}" in ${target.isStage ? "Stage" : `Sprite "${target.sprite.name}"`}`);
         }
       }
 
@@ -2378,9 +2325,7 @@
           bodies[name].activate(true);
           Ammo.destroy(force);
         } else {
-          console.warn(
-            `Attempted to apply force on nonexistent body "${name}" in ${target.isStage ? "Stage" : `Sprite "${target.sprite.name}"`}`
-          );
+          console.warn(`Attempted to apply force on nonexistent body "${name}" in ${target.isStage ? "Stage" : `Sprite "${target.sprite.name}"`}`);
         }
       }
 
@@ -2395,9 +2340,7 @@
           bodies[name].activate(true);
           Ammo.destroy(torque);
         } else {
-          console.warn(
-            `Attempted to apply force on nonexistent body "${name}" in ${target.isStage ? "Stage" : `Sprite "${target.sprite.name}"`}`
-          );
+          console.warn(`Attempted to apply force on nonexistent body "${name}" in ${target.isStage ? "Stage" : `Sprite "${target.sprite.name}"`}`);
         }
       }
 
@@ -2407,117 +2350,142 @@
           bodies[name].clearForces();
           bodies[name].activate(true);
         } else {
-          console.warn(
-            `Attempted to clear forces of nonexistent body "${name}" in ${target.isStage ? "Stage" : `Sprite "${target.sprite.name}"`}`
-          );
+          console.warn(`Attempted to clear forces of nonexistent body "${name}" in ${target.isStage ? "Stage" : `Sprite "${target.sprite.name}"`}`);
         }
       }
 
       // TODO: compute local frames/pivots instead of world transformation
-      addConstraint({ type, name, bodyA, bodyB, collide }, { target }) {
-        if (bodies[bodyA] && bodies[bodyB] && !constraints[name]) {
-          const a = bodies[bodyA];
-          const b = bodies[bodyB];
-
-          const transA = a.getCenterOfMassTransform();
-          const transB = b.getCenterOfMassTransform();
-
-          let constraint;
-
-          switch (type) {
-            case "btPoint2PointConstraint": {
-              const invA = new Ammo.btTransform();
-              invA.setIdentity();
-              invA.setOrigin(transA.getOrigin());
-              invA.setRotation(transA.getRotation());
-              invA.inverse();
-
-              const invB = new Ammo.btTransform();
-              invB.setIdentity();
-              invB.setOrigin(transB.getOrigin());
-              invB.setRotation(transB.getRotation());
-              invB.inverse();
-
-              const localA = invA
-                .op_mul(new Ammo.btTransform().setIdentity())
-                .getOrigin();
-              const localB = invB
-                .op_mul(new Ammo.btTransform().setIdentity())
-                .getOrigin();
-
-              constraint = new Ammo.btPoint2PointConstraint(
-                a,
-                b,
-                localA,
-                localB
-              );
-              break;
-            }
-
-            case "btHingeConstraint": {
-              const frameInA = new Ammo.btTransform();
-              frameInA.setIdentity();
-              frameInA.setOrigin(new Ammo.btVector3(0, 0, 0));
-
-              const frameInB = new Ammo.btTransform();
-              frameInB.setIdentity();
-              frameInB.setOrigin(new Ammo.btVector3(0, 0, 0));
-
-              constraint = new Ammo.btHingeConstraint(
-                a,
-                b,
-                frameInA,
-                frameInB,
-                false
-              );
-              break;
-            }
-
-            case "btSliderConstraint": {
-              const invA = new Ammo.btTransform(transA);
-              invA.inverse();
-              const invB = new Ammo.btTransform(transB);
-              invB.inverse();
-
-              const frameInA = invA.op_mul(transB);
-              const frameInB = invB.op_mul(transB);
-
-              constraint = new Ammo.btSliderConstraint(
-                a,
-                b,
-                frameInA,
-                frameInB,
-                true
-              );
-              break;
-            }
-
-            case "btFixedConstraint": {
-              const invA = new Ammo.btTransform(transA);
-              invA.inverse();
-              const invB = new Ammo.btTransform(transB);
-              invB.inverse();
-
-              const frameInA = invA.op_mul(transB);
-              const frameInB = invB.op_mul(transB);
-
-              constraint = new Ammo.btFixedConstraint(
-                a,
-                b,
-                frameInA,
-                frameInB
-              );
-              break;
-            }
-
-            default:
-              throw new Error(`Unknown constraint type: ${type}`);
-          }
-
-          world.addConstraint(constraint, !Scratch.Cast.toBoolean(collide));
-          constraints[name] = constraint;
+      addConstraint({ type, name, bodyA, bodyB, collide }, { target } = {}) {
+        if (!bodies[bodyA] || !bodies[bodyB] || constraints[name]) return;
+      
+        const a = bodies[bodyA];
+        const b = bodies[bodyB];
+      
+        // world transforms
+        const transA = a.getCenterOfMassTransform();
+        const transB = b.getCenterOfMassTransform();
+      
+        // choose a world-frame for the constraint:
+        // if `target` (an object { x,y,z }) is provided use that, otherwise use center of B
+        const worldFrame = new Ammo.btTransform();
+        worldFrame.setIdentity();
+        if (target && typeof target.x === 'number') {
+          worldFrame.setOrigin(new Ammo.btVector3(target.x, target.y, target.z));
+          // no rotation -> identity; change if you want orientation from target
+        } else {
+          // use transform of body B as the world frame (common choice)
+          worldFrame.setOrigin(transB.getOrigin());
+          worldFrame.setRotation(transB.getRotation());
         }
-      }
+      
+        // helper to compute frame in local coordinates: inv(bodyTransform) * worldFrame
+        function computeLocalFrame(bodyTransform) {
+          const inv = new Ammo.btTransform();
+          inv.setIdentity();
+          // copy bodyTransform into inv then invert (we don't mutate original)
+          inv.setOrigin(bodyTransform.getOrigin());
+          inv.setRotation(bodyTransform.getRotation());
+          inv.inverse();
+      
+          const localFrameTmp = inv.op_mul(worldFrame); // btTransform
+          // copy origin & rotation into a fresh btTransform (to avoid holding internals)
+          const frame = new Ammo.btTransform();
+          frame.setIdentity();
+          const o = localFrameTmp.getOrigin();
+          const r = localFrameTmp.getRotation();
+          frame.setOrigin(new Ammo.btVector3(o.x(), o.y(), o.z()));
+          frame.setRotation(new Ammo.btQuaternion(r.x(), r.y(), r.z(), r.w()));
+      
+          // cleanup temporaries we created
+          Ammo.destroy(inv);
+          // localFrameTmp is a new btTransform returned by op_mul; it is a wrapper around an internal object
+          // but we didn't create it via 'new' so don't destroy it; frame owns the copy we will use
+          return frame;
+        }
+      
+        let constraint = null;
+      
+        switch (type) {
+          case "btPoint2PointConstraint": {
+            // pivot in world space = worldFrame origin
+            const invA = new Ammo.btTransform();
+            invA.setIdentity();
+            invA.setOrigin(transA.getOrigin());
+            invA.setRotation(transA.getRotation());
+            invA.inverse();
+      
+            const invB = new Ammo.btTransform();
+            invB.setIdentity();
+            invB.setOrigin(transB.getOrigin());
+            invB.setRotation(transB.getRotation());
+            invB.inverse();
+      
+            const pivotWorld = worldFrame.getOrigin();
+            // compute pivot in local A and local B as new btVector3 copies
+            const tmpA = invA.op_mul(worldFrame).getOrigin();
+            const tmpB = invB.op_mul(worldFrame).getOrigin();
+      
+            const pivotInA = new Ammo.btVector3(tmpA.x(), tmpA.y(), tmpA.z());
+            const pivotInB = new Ammo.btVector3(tmpB.x(), tmpB.y(), tmpB.z());
+      
+            constraint = new Ammo.btPoint2PointConstraint(a, b, pivotInA, pivotInB);
+      
+            // cleanup
+            Ammo.destroy(invA);
+            Ammo.destroy(invB);
+            Ammo.destroy(pivotInA);
+            Ammo.destroy(pivotInB);
+      
+            break;
+          }
+      
+          case "btHingeConstraint": {
+            // create frames for each body such that the hinge frame is worldFrame
+            const frameInA = computeLocalFrame(transA);
+            const frameInB = computeLocalFrame(transB);
+      
+            constraint = new Ammo.btHingeConstraint(a, b, frameInA, frameInB, false);
+      
+            Ammo.destroy(frameInA);
+            Ammo.destroy(frameInB);
+            break;
+          }
+      
+          case "btSliderConstraint": {
+            // slider uses full frames
+            const frameInA = computeLocalFrame(transA);
+            const frameInB = computeLocalFrame(transB);
+      
+            constraint = new Ammo.btSliderConstraint(a, b, frameInA, frameInB, true);
+      
+            Ammo.destroy(frameInA);
+            Ammo.destroy(frameInB);
+            break;
+          }
+      
+          case "btFixedConstraint": {
+            const frameInA = computeLocalFrame(transA);
+            const frameInB = computeLocalFrame(transB);
+      
+            constraint = new Ammo.btFixedConstraint(a, b, frameInA, frameInB);
+      
+            Ammo.destroy(frameInA);
+            Ammo.destroy(frameInB);
+            break;
+          }
+      
+          default:
+            Ammo.destroy(worldFrame);
+            throw new Error(`Unknown constraint type: ${type}`);
+        }
+      
+        // add to world and store
+        world.addConstraint(constraint, !Scratch.Cast.toBoolean(collide));
+        constraints[name] = constraint;
+      
+        // cleanup
+        Ammo.destroy(worldFrame);
+      }      
 
       setConstraintLimits({ constraint, x, y, z }, { target }) {
         const c = constraints[constraint];
@@ -2538,9 +2506,7 @@
           return;
         }
 
-        console.warn(
-          `Attempted to set limits of unsupporting or nonexistent constraint "${constraint} in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name + '"'}`
-        );
+        console.warn(`Attempted to set limits of unsupporting or nonexistent constraint "${constraint} in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name + '"'}`);
       }
 
       removeConstraint({ name }, { target }) {
