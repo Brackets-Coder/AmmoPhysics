@@ -3,7 +3,6 @@
 A work-in-progress Turbowarp extension based on the ammo.js physics library, which is based on the C++ Bullet Physics SDK.
 
 The goal is to provide feature-complete, advanced, and performant 3D physics in a simple-to-understand manner. This extension aims to be consistent with the Box2D and Simple3D extensions.
-**_This extension is still a work in progress and should not be used._**
 
 https://github.com/user-attachments/assets/ffaa1071-dea3-4bf6-b804-900e788113a1
 
@@ -23,7 +22,7 @@ https://github.com/user-attachments/assets/ffaa1071-dea3-4bf6-b804-900e788113a1
     - [x] Triangle Meshes
     - [x] Compound bodies
 - [x] Physical Materials (friction, restitution, etc.)
-- [x] Constraints (All types)
+- [ ] ~~Constraints (All types)~~
 - [x] Collision:
     - [x] Collision Detection
     - [x] Raycasting
