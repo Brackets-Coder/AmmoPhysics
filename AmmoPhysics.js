@@ -159,24 +159,18 @@
       const points = [];
       const array = list;
       if (array) {
-        for (let i = 0; i < array.length; i++) {
-          if (array[i] != "") {
-            const item = array[i].split(" ");
-            if (item.length !== 3) {
-              console.warn(`Attempted to process invalid vertex list "${list}"`);
-              return;
+          for (let i = 0; i < array.length; i++) {
+            if (array[i] != "") {
+              const item = array[i].split(" ");
+              if (item.length !== 3) {
+                console.log("hello");
+                return;
+              }
+              points.push(new Ammo.btVector3(Scratch.Cast.toNumber(item[0]), Scratch.Cast.toNumber(item[1]), Scratch.Cast.toNumber(item[2])));
             }
-            points.push(
-              new Ammo.btVector3(
-                Scratch.Cast.toNumber(item[0]),
-                Scratch.Cast.toNumber(item[1]),
-                Scratch.Cast.toNumber(item[2])
-              )
-            );
           }
-        }
       } else {
-        return;
+        console.warn(`Attempted to process nonexistent vertex list "${list}"`);
       }
       return points;
     }
@@ -187,7 +181,7 @@
       if (faceList) {
         for (let i = 0; i < faceList.length; i++) {
           if (faceList[i] != "") {
-            const indices = faceList[i]?.split(" ")?.map((n) => Scratch.Cast.toNumber(n));
+            const indices = faceList[i]?.split(" ")?.map(n => Scratch.Cast.toNumber(n) - 1);
             // * validate triangulated mesh
             if (indices.length !== 3) {
               console.warn(`Attempted to process non-triangulated face list "${faceList}"`);
@@ -220,8 +214,6 @@
       let faces = objList.filter(line => line.startsWith("f "));
       if (faces) faces = faces.map(line => line.split("f ")[1]);
 
-      console.log(vertices, faces);
-
       if (vertices.every(item => item.split(" ").length == 3) && faces.every(item => item.split(" ").length == 3)) {
         return { vertices, faces };
       } else if (vertices.every(item => item.split(" ").length == 3) && !faces.every(item => item.split(" ").length == 3)) {
@@ -230,24 +222,6 @@
         return;
       }
     }
-
-    /*
-        function processOBJ(objList) {
-      let vertices = objList.filter(line => line.startsWith("v ")) || [];
-      vertices = vertices.map(line => line.split("v ")[1]);
-
-      let faces = objList.filter(line => line.startsWith("f ")) || [];
-      faces = faces.map(line => line.split("f ")[1]);
-
-      if (vertices.length > 0 && faces.length > 0 &&
-          vertices.every(item => item.split(" ").length === 3) &&
-          faces.every(item => item.split(" ").length === 3)) {
-        return { vertices, faces };
-      } else {
-        return { vertices: [], faces: [] }; // Return empty arrays if invalid
-      }
-    }
-     */
 
     let collisionConfig = new Ammo.btDefaultCollisionConfiguration();
     let dispatcher = new Ammo.btCollisionDispatcher(collisionConfig);
@@ -1643,8 +1617,6 @@
           return;
         }
 
-        console.log(list);
-
         if (list) {
           const shape = new Ammo.btConvexHullShape();
           list.forEach(i => shape.addPoint(i, true));
@@ -1758,8 +1730,6 @@
         }
 
         const objFile = processOBJ(target.lookupVariableByNameAndType(obj, "list").value);
-
-        console.log(objFile);
 
         if (type == "btConvexHullShape") {
           const points = processVertices(objFile.vertices);
