@@ -163,7 +163,6 @@
             if (array[i] != "") {
               const item = array[i].split(" ");
               if (item.length !== 3) {
-                console.log("hello");
                 return;
               }
               points.push(new Ammo.btVector3(Scratch.Cast.toNumber(item[0]), Scratch.Cast.toNumber(item[1]), Scratch.Cast.toNumber(item[2])));
@@ -213,6 +212,9 @@
 
       let faces = objList.filter(line => line.startsWith("f "));
       if (faces) faces = faces.map(line => line.split("f ")[1]);
+
+      // handle slash notation if present
+      if (faces) faces = faces.map(line => line.split(" ").map(part => part.includes("/") ? part.split("/")[0] : part).join(" "));
 
       if (vertices.every(item => item.split(" ").length == 3) && faces.every(item => item.split(" ").length == 3)) {
         return { vertices, faces };
@@ -865,6 +867,22 @@
                   defaultValue: 0,
                 },
               },
+            },
+            {
+              opcode: "bodyActive",
+              blockType: Scratch.BlockType.BOOLEAN,
+              text: Scratch.translate("is body [name] active?"),
+              arguments: {
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: "body",
+                },
+              },
+            },
+            {
+              opcode: "anyBodyActive",
+              blockType: Scratch.BlockType.BOOLEAN,
+              text: Scratch.translate("is any body active?"),
             },
             {
               opcode: "deleteBody",
@@ -1917,6 +1935,17 @@
         } else {
           console.warn(`Attempted to set gravity of nonexistent body "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`);
         }
+      }
+      
+      bodyActive({ body }) {
+        return bodies[Scratch.Cast.toString(body)]?.isActive() || false;
+      }
+
+      anyBodyActive() {
+        for (const key in bodies) {
+          if (bodies[key]?.isActive()) return true;
+        }
+        return false;
       }
 
       deleteBody({ name }, { target }) {
