@@ -18,8 +18,8 @@
     throw new Error("This extension must run unsandboxed!");
   }
 
-  const Ammo = await Scratch.external.evalAndReturn("https://raw.githubusercontent.com/Brackets-Coder/AmmoPhysics/refs/heads/main/dependencies/ammo.min.js", "Ammo");
-  const Quaternion = await Scratch.external.evalAndReturn('https://raw.githubusercontent.com/Brackets-Coder/AmmoPhysics/refs/heads/main/dependencies/quaternion.min.js', "Quaternion");
+  const Ammo = await Scratch.external.evalAndReturn("https://raw.githubusercontent.com/Brackets-Coder/AmmoPhysics/a363738e17bcb3d197950286e8e92a3c12da5283/dependencies/ammo.min.js", "Ammo");
+  const Quaternion = await Scratch.external.evalAndReturn('https://raw.githubusercontent.com/Brackets-Coder/AmmoPhysics/a363738e17bcb3d197950286e8e92a3c12da5283/dependencies/quaternion.min.js', "Quaternion");
 
   Ammo().then(function (Ammo) {
 
@@ -120,21 +120,21 @@
       const points = [];
       const array = list;
       if (array) {
-          for (let i = 0; i < array.length; i++) {
-            if (array[i] != "") {
-              const item = array[i].split(" ");
-              if (item.length !== 3) {
-                return;
-              }
-              points.push(new Ammo.btVector3(Cast.toNumber(item[0]), Cast.toNumber(item[1]), Cast.toNumber(item[2])));
+        for (let i = 0; i < array.length; i++) {
+          if (array[i] != "") {
+            const item = array[i].split(" ");
+            if (item.length !== 3) {
+              return;
             }
+            points.push(new Ammo.btVector3(Cast.toNumber(item[0]), Cast.toNumber(item[1]), Cast.toNumber(item[2])));
           }
+        }
       } else {
         console.warn(`Attempted to process nonexistent vertex list "${list}"`);
       }
       return points;
     }
-    
+
     function createTriangleMesh(points, faceList) {
       const mesh = new Ammo.btTriangleMesh();
 
@@ -186,6 +186,37 @@
       }
     }
 
+    function resetWorld() {
+      world.setGravity(new Ammo.btVector3(0, -9.81, 0));
+      for (const key in bodies) {
+        if (Object.prototype.hasOwnProperty.call(bodies, key)) {
+          const body = bodies[key];
+          if (body) {
+            world.removeRigidBody(body);
+            if (body.getMotionState()) Ammo.destroy(body.getMotionState());
+            if (body.getCollisionShape())
+              Ammo.destroy(body.getCollisionShape());
+            Ammo.destroy(body);
+
+            delete bodies[key];
+          }
+        }
+      }
+      bodies = {};
+
+      for (const key in rays) {
+        if (Object.prototype.hasOwnProperty.call(rays, key)) {
+          const ray = rays[key];
+          if (ray) {
+            if (ray.endpoint) Ammo.destroy(ray.endpoint);
+            Ammo.destroy(ray);
+            delete rays[key];
+          }
+        }
+      }
+      rays = {};
+    }
+
     let collisionConfig = new Ammo.btDefaultCollisionConfiguration();
     let dispatcher = new Ammo.btCollisionDispatcher(collisionConfig);
     Ammo.btGImpactCollisionAlgorithm.prototype.registerAlgorithm(dispatcher);
@@ -218,35 +249,10 @@
     });
     //* ------------
 
+    let autoReset = true;
+
     runtime.on("PROJECT_START", () => {
-      world.setGravity(new Ammo.btVector3(0, -9.81, 0));
-      for (const key in bodies) {
-        if (Object.prototype.hasOwnProperty.call(bodies, key)) {
-          const body = bodies[key];
-          if (body) {
-            world.removeRigidBody(body);
-            if (body.getMotionState()) Ammo.destroy(body.getMotionState());
-            if (body.getCollisionShape())
-              Ammo.destroy(body.getCollisionShape());
-            Ammo.destroy(body);
-
-            delete bodies[key];
-          }
-        }
-      }
-      bodies = {};
-
-      for (const key in rays) {
-        if (Object.prototype.hasOwnProperty.call(rays, key)) {
-          const ray = rays[key];
-          if (ray) {
-            if (ray.endpoint) Ammo.destroy(ray.endpoint);
-            Ammo.destroy(ray);
-            delete rays[key];
-          }
-        }
-      }
-      rays = {};
+      if (autoReset) resetWorld();
     });
 
     // These SVG Icons from Blender source code: https://github.com/blender/blender/tree/main/release/datafiles/icons_svg
@@ -262,6 +268,23 @@
     const raycastIcon = "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHdpZHRoPSIzNjAiIGhlaWdodD0iMzYwIiB2aWV3Qm94PSIwLDAsMzYwLDM2MCI+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTYwLDApIj48ZyBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIj48cGF0aCBkPSJNMTM4LjA3NjUxLDMwOS4yMjQxOGwtMjcuMzAwNjksLTI3LjMwMDY5bDI0Ni4yNjkzMywtMjQ2LjI2OTMzbDI3LjMwMDY5LDI3LjMwMDY5eiIgZmlsbC1vcGFjaXR5PSIwLjUwMTk2IiBmaWxsPSIjZmZmZmZmIi8+PHBhdGggZD0iTTM1Ny4wNDUxNiw2Mi45NTQ4NGMtNy41Mzg4NywtNy41Mzg4NyAtNy41Mzg4NywtMTkuNzYxODIgMCwtMjcuMzAwNjljNy41Mzg4NywtNy41Mzg4NyAxOS43NjE4MSwtNy41Mzg4NyAyNy4zMDA2OCwwLjAwMDAxYzcuNTM4ODcsNy41Mzg4NyA3LjUzODg4LDE5Ljc2MTgxIDAuMDAwMDEsMjcuMzAwNjhjLTcuNTM4ODcsNy41Mzg4NyAtMTkuNzYxODIsNy41Mzg4NyAtMjcuMzAwNjksMHoiIGZpbGw9IiNmZmZmZmYiLz48cGF0aCBkPSJNMTAwLjA4MzE5LDMxOS45MTY4MWMtMTMuNDQ0MjUsLTEzLjQ0NDI1IC0xMy40NDQyNSwtMzUuMjQxNyAwLC00OC42ODU5NWMxMy40NDQyNSwtMTMuNDQ0MjUgMzUuMjQxNjksLTEzLjQ0NDI0IDQ4LjY4NTk0LDAuMDAwMDFjMTMuNDQ0MjUsMTMuNDQ0MjUgMTMuNDQ0MjYsMzUuMjQxNjkgMC4wMDAwMSw0OC42ODU5NGMtMTMuNDQ0MjUsMTMuNDQ0MjUgLTM1LjI0MTcsMTMuNDQ0MjUgLTQ4LjY4NTk1LDB6IiBmaWxsPSIjZmZmZmZmIi8+PHBhdGggZD0iTTI0MCw2OC42MDl2LTM4LjYwOWgxMzAuNjk1NXYzOC42MDl6IiBmaWxsPSIjZmZmZmZmIi8+PHBhdGggZD0iTTM1MS4zOTEsNDkuMzA0NWgzOC42MDl2MTMwLjY5NTVoLTM4LjYwOXoiIGZpbGw9IiNmZmZmZmYiLz48cGF0aCBkPSJNMjI2LjM0OTY2LDYyLjk1NDg0Yy03LjUzODg3LC03LjUzODg3IC03LjUzODg3LC0xOS43NjE4MiAwLC0yNy4zMDA2OWM3LjUzODg3LC03LjUzODg3IDE5Ljc2MTgxLC03LjUzODg3IDI3LjMwMDY4LDAuMDAwMDFjNy41Mzg4Nyw3LjUzODg3IDcuNTM4ODgsMTkuNzYxODEgMC4wMDAwMSwyNy4zMDA2OGMtNy41Mzg4Nyw3LjUzODg3IC0xOS43NjE4Miw3LjUzODg3IC0yNy4zMDA2OSwweiIgZmlsbD0iI2ZmZmZmZiIvPjxwYXRoIGQ9Ik0zNTcuMDQ1MTYsMTkzLjY1MDM0Yy03LjUzODg3LC03LjUzODg3IC03LjUzODg3LC0xOS43NjE4MiAwLC0yNy4zMDA2OWM3LjUzODg3LC03LjUzODg3IDE5Ljc2MTgxLC03LjUzODg3IDI3LjMwMDY4LDAuMDAwMDFjNy41Mzg4Nyw3LjUzODg3IDcuNTM4ODgsMTkuNzYxODEgMC4wMDAwMSwyNy4zMDA2OGMtNy41Mzg4Nyw3LjUzODg3IC0xOS43NjE4Miw3LjUzODg3IC0yNy4zMDA2OSwweiIgZmlsbD0iI2ZmZmZmZiIvPjxwYXRoIGQ9Ik02MCwzNjB2LTM2MGgzNjB2MzYweiIgZmlsbD0ibm9uZSIvPjwvZz48L2c+PC9zdmc+PCEtLXJvdGF0aW9uQ2VudGVyOjE4MDoxODAtLT4=";
 
     class AmmoPhysics {
+
+      constructor () {
+        this.folders = {
+          simControl: true, // folder open by default
+          bodies: false,
+          transformations: false,
+          collisions: false,
+          raycasting: false,
+          forces: false,
+        }
+
+        this.reset = () => {
+          if (Scratch.vm.extensionManager)
+            Scratch.vm.extensionManager.refreshBlocks();
+        }
+      }
+
       getInfo() {
         return {
           id: "masterMathAmmoPhysics",
@@ -269,23 +292,39 @@
           docsURI: "https://extensions.turbowarp.org/MasterMath/AmmoPhysics",
           blocks: [
             {
-              blockType: "label",
-              text: Scratch.translate("Simulation Control"),
+              blockType: Scratch.BlockType.BUTTON,
+              text: this.folders.simControl ? Scratch.translate("▼ Simulation Control") :  Scratch.translate("▶ Simulation Control"),
+              func: "toggleSimControl"
             },
             {
               opcode: "reset",
               blockType: Scratch.BlockType.COMMAND,
               text: Scratch.translate("reset world"),
+              hideFromPalette: !this.folders.simControl,
+            },
+            {
+              opcode: "toggleAutoReset",
+              blockType: Scratch.BlockType.COMMAND,
+              text: Scratch.translate("[toggle] auto world reset on project start"),
+              hideFromPalette: !this.folders.simControl,
+              arguments: {
+                toggle: {
+                  type: Scratch.ArgumentType.STRING,
+                  menu: "toggleMenu",
+                },
+              }
             },
             {
               opcode: "step",
               blockType: Scratch.BlockType.COMMAND,
               text: Scratch.translate("step simulation"),
+              hideFromPalette: !this.folders.simControl,
             },
             {
               opcode: "stepWith",
               type: Scratch.BlockType.COMMAND,
               text: Scratch.translate("step simulation with delta time: [dt] max substeps: [maxSubsteps] fixed time step: [fixedTimeStep]"),
+              hideFromPalette: !this.folders.simControl,
               arguments: {
                 dt: {
                   type: Scratch.ArgumentType.NUMBER,
@@ -305,6 +344,7 @@
               opcode: "setMaxSubSteps",
               blockType: Scratch.BlockType.COMMAND,
               text: Scratch.translate("set max substeps to [value]"),
+              hideFromPalette: !this.folders.simControl,
               arguments: {
                 value: {
                   type: Scratch.ArgumentType.NUMBER,
@@ -313,9 +353,17 @@
               },
             },
             {
+              opcode: "getMaxSubSteps",
+              blockType: Scratch.BlockType.REPORTER,
+              text: Scratch.translate("max substeps"),
+              hideFromPalette: !this.folders.simControl,
+              disableMonitor: true,
+            },
+            {
               opcode: "setGravity",
               blockType: Scratch.BlockType.COMMAND,
               text: Scratch.translate("set gravity to x: [x] y: [y] z: [z]"),
+              hideFromPalette: !this.folders.simControl,
               arguments: {
                 x: {
                   type: Scratch.ArgumentType.NUMBER,
@@ -335,6 +383,7 @@
               opcode: "getGravity",
               blockType: Scratch.BlockType.REPORTER,
               text: Scratch.translate("gravity [xyz]"),
+              hideFromPalette: !this.folders.simControl,
               disableMonitor: true,
               arguments: {
                 xyz: {
@@ -344,28 +393,22 @@
               },
             },
             {
-              opcode: "getMaxSubSteps",
-              blockType: Scratch.BlockType.REPORTER,
-              text: Scratch.translate("max substeps"),
-            },
-            "---",
-            {
-              blockType: "label",
-              text: Scratch.translate("Bodies"),
+              blockType: Scratch.BlockType.BUTTON,
+              text: this.folders.bodies ? Scratch.translate("▼ Bodies") : Scratch.translate("▶ Bodies"),
+              func: "toggleBodies"
             },
             {
               opcode: "allBodies",
               blockType: Scratch.BlockType.REPORTER,
               text: Scratch.translate("all bodies"),
+              hideFromPalette: !this.folders.bodies,
             },
             {
               opcode: "createBoxBody",
               blockType: Scratch.BlockType.COMMAND,
-              // TODO: FIX THE MESS PRETTIER CREATED
-              text: Scratch.translate(
-                "create box body with name: [name] mass: [mass] size: [x] [y] [z]"
-              ),
+              text: Scratch.translate("create box body with name: [name] mass: [mass] size: [x] [y] [z]"),
               blockIconURI: cubeIcon,
+              hideFromPalette: !this.folders.bodies,
               arguments: {
                 name: {
                   type: Scratch.ArgumentType.STRING,
@@ -394,6 +437,7 @@
               blockType: Scratch.BlockType.COMMAND,
               text: Scratch.translate("create sphere body with name: [name] mass: [mass] radius: [radius]"),
               blockIconURI: sphereIcon,
+              hideFromPalette: !this.folders.bodies,
               arguments: {
                 name: {
                   type: Scratch.ArgumentType.STRING,
@@ -414,6 +458,7 @@
               blockType: Scratch.BlockType.COMMAND,
               text: Scratch.translate("create cylinder body with name: [name] mass: [mass] radius: [radius] height: [height]"),
               blockIconURI: cylinderIcon,
+              hideFromPalette: !this.folders.bodies,
               arguments: {
                 name: {
                   type: Scratch.ArgumentType.STRING,
@@ -438,6 +483,7 @@
               blockType: Scratch.BlockType.COMMAND,
               text: Scratch.translate("create cone body with name: [name] mass: [mass] radius: [radius] height: [height]"),
               blockIconURI: coneIcon,
+              hideFromPalette: !this.folders.bodies,
               arguments: {
                 name: {
                   type: Scratch.ArgumentType.STRING,
@@ -462,6 +508,7 @@
               blockType: Scratch.BlockType.COMMAND,
               text: Scratch.translate("create capsule body with name: [name] mass: [mass] radius: [radius] height: [height]"),
               blockIconURI: capsuleIcon,
+              hideFromPalette: !this.folders.bodies,
               arguments: {
                 name: {
                   type: Scratch.ArgumentType.STRING,
@@ -486,6 +533,7 @@
               blockType: Scratch.BlockType.COMMAND,
               text: Scratch.translate("create convex hull body with name: [name] mass: [mass] from vertices: [vertices]"),
               blockIconURI: meshIcon,
+              hideFromPalette: !this.folders.bodies,
               arguments: {
                 name: {
                   type: Scratch.ArgumentType.STRING,
@@ -506,6 +554,7 @@
               blockType: Scratch.BlockType.COMMAND,
               text: Scratch.translate("create [type] mesh body with name: [name] mass: [mass] from vertices: [vertices] faces: [faces]"),
               blockIconURI: meshIcon,
+              hideFromPalette: !this.folders.bodies,
               arguments: {
                 type: {
                   type: Scratch.ArgumentType.STRING,
@@ -534,6 +583,7 @@
               blockType: Scratch.BlockType.COMMAND,
               text: Scratch.translate("create [type] mesh body with name: [name] mass: [mass] from OBJ: [obj]"),
               blockIconURI: meshIcon,
+              hideFromPalette: !this.folders.bodies,
               arguments: {
                 type: {
                   type: Scratch.ArgumentType.STRING,
@@ -553,11 +603,11 @@
                 },
               },
             },
-            "---",
             {
               opcode: "createCompoundShape",
               blockType: Scratch.BlockType.COMMAND,
               text: Scratch.translate("create compound shape with name: [name]"),
+              hideFromPalette: !this.folders.bodies,
               blockIconURI: compoundIcon,
               arguments: {
                 name: {
@@ -571,6 +621,7 @@
               blockType: Scratch.BlockType.COMMAND,
               text: Scratch.translate("[IMAGE] add box shape with size: [x] [y] [z] to compound shape [name] at x: [x1] y: [y1] z: [z1] with rotation x: [x2] y: [y2] z: [z2]"),
               blockIconURI: compoundIcon,
+              hideFromPalette: !this.folders.bodies,
               arguments: {
                 IMAGE: {
                   type: Scratch.ArgumentType.IMAGE,
@@ -623,6 +674,7 @@
               blockType: Scratch.BlockType.COMMAND,
               text: Scratch.translate("[IMAGE] add sphere shape with radius: [radius] to compound shape [name] at x: [x1] y: [y1] z: [z1] with rotation x: [x2] y: [y2] z: [z2]"),
               blockIconURI: compoundIcon,
+              hideFromPalette: !this.folders.bodies,
               arguments: {
                 IMAGE: {
                   type: Scratch.ArgumentType.IMAGE,
@@ -667,6 +719,7 @@
               blockType: Scratch.BlockType.COMMAND,
               text: Scratch.translate("[IMAGE] add cylinder shape with radius: [radius] and height: [height] to compound shape [name] at x: [x1] y: [y1] z: [z1] with rotation x: [x2] y: [y2] z: [z2]"),
               blockIconURI: compoundIcon,
+              hideFromPalette: !this.folders.bodies,
               arguments: {
                 IMAGE: {
                   type: Scratch.ArgumentType.IMAGE,
@@ -715,6 +768,7 @@
               blockType: Scratch.BlockType.COMMAND,
               text: Scratch.translate("[IMAGE] add cone shape with radius: [radius] and height: [height] to compound shape [name] at x: [x1] y: [y1] z: [z1] with rotation x: [x2] y: [y2] z: [z2]"),
               blockIconURI: compoundIcon,
+              hideFromPalette: !this.folders.bodies,
               arguments: {
                 IMAGE: {
                   type: Scratch.ArgumentType.IMAGE,
@@ -763,6 +817,7 @@
               blockType: Scratch.BlockType.COMMAND,
               text: Scratch.translate("[IMAGE] add capsule shape with radius: [radius] and height: [height] to compound shape [name] at x: [x1] y: [y1] z: [z1] with rotation x: [x2] y: [y2] z: [z2]"),
               blockIconURI: compoundIcon,
+              hideFromPalette: !this.folders.bodies,
               arguments: {
                 IMAGE: {
                   type: Scratch.ArgumentType.IMAGE,
@@ -806,12 +861,13 @@
                 },
               },
             },
-            // TODO: compound body meshes here?
+            // TODO: compound body triangle meshes here?
             {
               opcode: "createCompoundBody",
               blockType: Scratch.BlockType.COMMAND,
               text: Scratch.translate("create rigid body from compound shape [name] with mass [mass]"),
               blockIconURI: compoundIcon,
+              hideFromPalette: !this.folders.bodies,
               arguments: {
                 name: {
                   type: Scratch.ArgumentType.STRING,
@@ -827,6 +883,7 @@
               opcode: "setPhysicalMaterial",
               blockType: Scratch.BlockType.COMMAND,
               text: Scratch.translate("set [property] of body [name] to [value]"),
+              hideFromPalette: !this.folders.bodies,
               arguments: {
                 property: {
                   type: Scratch.ArgumentType.STRING,
@@ -846,6 +903,7 @@
               opcode: "setBodyGravity",
               blockType: Scratch.BlockType.COMMAND,
               text: Scratch.translate("set gravity of [body] to x: [x] y: [y] z: [z]"),
+              hideFromPalette: !this.folders.bodies,
               arguments: {
                 body: {
                   type: Scratch.ArgumentType.STRING,
@@ -869,6 +927,7 @@
               opcode: "bodyActive",
               blockType: Scratch.BlockType.BOOLEAN,
               text: Scratch.translate("is body [name] active?"),
+              hideFromPalette: !this.folders.bodies,
               arguments: {
                 name: {
                   type: Scratch.ArgumentType.STRING,
@@ -880,10 +939,12 @@
               opcode: "anyBodyActive",
               blockType: Scratch.BlockType.BOOLEAN,
               text: Scratch.translate("is any body active?"),
+              hideFromPalette: !this.folders.bodies,
             },
             {
               opcode: "deleteBody",
               text: Scratch.translate("delete body [name]"),
+              hideFromPalette: !this.folders.bodies,
               arguments: {
                 name: {
                   type: Scratch.ArgumentType.STRING,
@@ -891,17 +952,16 @@
                 },
               },
             },
-            "---",
             {
-              blockType: "label",
-              text: Scratch.translate("Transformations"),
+              blockType: Scratch.BlockType.BUTTON,
+              text: this.folders.transformations ? Scratch.translate("▼ Transformations") : Scratch.translate("▶ Transformations"),
+              func: "toggleTransformations"
             },
             {
               opcode: "setBodyTransformation",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate(
-                "set [transform] of body [name] to x: [x] y: [y] z: [z]"
-              ),
+              text: Scratch.translate("set [transform] of body [name] to x: [x] y: [y] z: [z]"),
+              hideFromPalette: !this.folders.transformations,
               arguments: {
                 transform: {
                   type: Scratch.ArgumentType.STRING,
@@ -928,9 +988,8 @@
             {
               opcode: "changeBodyTransformation",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate(
-                "change [transform] of body [name] by x: [x] y: [y] z: [z]"
-              ),
+              text: Scratch.translate("change [transform] of body [name] by x: [x] y: [y] z: [z]"),
+              hideFromPalette: !this.folders.transformations,
               arguments: {
                 transform: {
                   type: Scratch.ArgumentType.STRING,
@@ -958,6 +1017,7 @@
               opcode: "bodyTransformation",
               blockType: Scratch.BlockType.REPORTER,
               text: Scratch.translate("[xyz] [transform] of body [name]"),
+              hideFromPalette: !this.folders.transformations,
               arguments: {
                 xyz: {
                   type: Scratch.ArgumentType.STRING,
@@ -973,17 +1033,16 @@
                 },
               },
             },
-            "---",
             {
-              blockType: "label",
-              text: Scratch.translate("Collisions"),
+              blockType: Scratch.BlockType.BUTTON,
+              text: this.folders.collisions ? Scratch.translate("▼ Collisions") : Scratch.translate("▶ Collisions"),
+              func: "toggleCollisions"
             },
             {
               opcode: "toggleCollisionResponse",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate(
-                "[toggle] collision response for body [name]"
-              ),
+              text: Scratch.translate("[toggle] collision response for body [name]"),
+              hideFromPalette: !this.folders.collisions,
               arguments: {
                 toggle: {
                   type: Scratch.ArgumentType.STRING,
@@ -998,9 +1057,8 @@
             {
               opcode: "bodyTouchingBody",
               blockType: Scratch.BlockType.BOOLEAN,
-              text: Scratch.translate(
-                "is body [body] touching body [body2]?"
-              ),
+              text: Scratch.translate("is body [body] touching body [body2]?"),
+              hideFromPalette: !this.folders.collisions,
               arguments: {
                 body: {
                   type: Scratch.ArgumentType.STRING,
@@ -1016,6 +1074,7 @@
               opcode: "bodyTouchingAny",
               blockType: Scratch.BlockType.BOOLEAN,
               text: Scratch.translate("is body [body] touching any body?"),
+              hideFromPalette: !this.folders.collisions,
               arguments: {
                 body: {
                   type: Scratch.ArgumentType.STRING,
@@ -1027,6 +1086,7 @@
               opcode: "allBodiesTouchingBody",
               blockType: Scratch.BlockType.REPORTER,
               text: Scratch.translate("get all bodies touching body [body]"),
+              hideFromPalette: !this.folders.collisions,
               arguments: {
                 body: {
                   type: Scratch.ArgumentType.STRING,
@@ -1034,17 +1094,16 @@
                 },
               },
             },
-            "---",
             {
-              blockType: "label",
-              text: Scratch.translate("Raycasting"),
+              blockType: Scratch.BlockType.BUTTON,
+              text: this.folders.raycasting ? Scratch.translate("▼ Raycasting") : Scratch.translate("▶ Raycasting"),
+              func: "toggleRaycasting"
             },
             {
               opcode: "rayCast",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate(
-                "cast ray with name [name] from x: [x] y: [y] z: [z] to x: [x2] y: [y2] z: [z2]"
-              ),
+              text: Scratch.translate("cast ray with name [name] from x: [x] y: [y] z: [z] to x: [x2] y: [y2] z: [z2]"),
+              hideFromPalette: !this.folders.raycasting,
               blockIconURI: raycastIcon,
               arguments: {
                 name: {
@@ -1080,9 +1139,8 @@
             {
               opcode: "rayCastDirection",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate(
-                "cast ray with name [name] from x: [x] y: [y] z: [z] with rotation x: [rotX] y: [rotY] z: [rotZ] distance: [distance]"
-              ),
+              text: Scratch.translate("cast ray with name [name] from x: [x] y: [y] z: [z] with rotation x: [rotX] y: [rotY] z: [rotZ] distance: [distance]"),
+              hideFromPalette: !this.folders.raycasting,
               blockIconURI: raycastIcon,
               arguments: {
                 name: {
@@ -1122,9 +1180,8 @@
             {
               opcode: "rayCastTowards",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate(
-                "cast ray with name [name] from x: [x] y: [y] z: [z] towards coordinate x: [x2] y: [y2] z: [z2] distance: [distance]"
-              ),
+              text: Scratch.translate("cast ray with name [name] from x: [x] y: [y] z: [z] towards coordinate x: [x2] y: [y2] z: [z2] distance: [distance]"),
+              hideFromPalette: !this.folders.raycasting,
               blockIconURI: raycastIcon,
               arguments: {
                 name: {
@@ -1165,6 +1222,7 @@
               opcode: "getRay",
               blockType: Scratch.BlockType.REPORTER,
               text: Scratch.translate("hit [xyz] [property] of ray [name]"),
+              hideFromPalette: !this.folders.raycasting,
               blockIconURI: raycastIcon,
               arguments: {
                 index: {
@@ -1189,6 +1247,7 @@
               opcode: "getRayTouching",
               blockType: Scratch.BlockType.BOOLEAN,
               text: Scratch.translate("ray [name] is touching body [body]?"),
+              hideFromPalette: !this.folders.raycasting,
               blockIconURI: raycastIcon,
               arguments: {
                 name: {
@@ -1205,6 +1264,7 @@
               opcode: "deleteRay",
               blockType: Scratch.BlockType.COMMAND,
               text: Scratch.translate("delete ray [name]"),
+              hideFromPalette: !this.folders.raycasting,
               blockIconURI: raycastIcon,
               arguments: {
                 name: {
@@ -1213,17 +1273,16 @@
                 },
               },
             },
-            "---",
             {
-              blockType: "label",
-              text: Scratch.translate("Forces"),
+              blockType: Scratch.BlockType.BUTTON,
+              text: this.folders.forces ? Scratch.translate("▼ Forces") : Scratch.translate("▶ Forces"),
+              func: "toggleForces"
             },
             {
               opcode: "pushForce",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate(
-                "push body [name] with [force] x: [x] y: [y] z: [z] newtons with offset x: [x2] y: [y2] z: [z2] meters"
-              ),
+              text: Scratch.translate("push body [name] with [force] x: [x] y: [y] z: [z] newtons with offset x: [x2] y: [y2] z: [z2] meters"),
+              hideFromPalette: !this.folders.forces,
               arguments: {
                 name: {
                   type: Scratch.ArgumentType.STRING,
@@ -1263,9 +1322,8 @@
             {
               opcode: "pushCentralForce",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate(
-                "push body [name] with central [force] force x: [x] y: [y] z: [z] newtons"
-              ),
+              text: Scratch.translate("push body [name] with central [force] force x: [x] y: [y] z: [z] newtons"),
+              hideFromPalette: !this.folders.forces,
               arguments: {
                 name: {
                   type: Scratch.ArgumentType.STRING,
@@ -1292,9 +1350,8 @@
             {
               opcode: "pushTorque",
               blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate(
-                "push body [name] with [torque] x: [x] y: [y] z: [z]"
-              ),
+              text: Scratch.translate("push body [name] with [torque] x: [x] y: [y] z: [z]"),
+              hideFromPalette: !this.folders.forces,
               arguments: {
                 name: {
                   type: Scratch.ArgumentType.STRING,
@@ -1323,6 +1380,7 @@
               opcode: "clearForces",
               blockType: Scratch.BlockType.COMMAND,
               text: Scratch.translate("stop pushing [name]"),
+              hideFromPalette: !this.folders.forces,
               arguments: {
                 name: {
                   type: Scratch.ArgumentType.STRING,
@@ -1487,6 +1545,36 @@
         };
       }
 
+      toggleSimControl() {
+        this.folders.simControl = !this.folders.simControl;
+        this.reset();
+      }
+
+      toggleBodies() {
+        this.folders.bodies = !this.folders.bodies;
+        this.reset();
+      }
+
+      toggleTransformations() {
+        this.folders.transformations = !this.folders.transformations;
+        this.reset();
+      }
+
+      toggleCollisions() {
+        this.folders.collisions = !this.folders.collisions;
+        this.reset();
+      }
+
+      toggleRaycasting() {
+        this.folders.raycasting = !this.folders.raycasting;
+        this.reset();
+      }
+
+      toggleForces() {
+        this.folders.forces = !this.folders.forces;
+        this.reset();
+      }
+
       //* From Simple3D extension
       listsMenu() {
         const stage = vm.runtime.getTargetForStage();
@@ -1494,13 +1582,13 @@
           vm.editingTarget !== stage ? vm.editingTarget : null;
         const local = editingTarget
           ? Object.values(editingTarget.variables)
-              .filter((v) => v.type == "list")
-              .map((v) => v.name)
+            .filter((v) => v.type == "list")
+            .map((v) => v.name)
           : [];
         const global = stage
           ? Object.values(stage.variables)
-              .filter((v) => v.type == "list")
-              .map((v) => v.name)
+            .filter((v) => v.type == "list")
+            .map((v) => v.name)
           : [];
         const all = [...local, ...global];
         all.sort();
@@ -1510,33 +1598,11 @@
       //* -----------------------
 
       reset() {
-        world.setGravity(new Ammo.btVector3(0, -9.81, 0));
-        for (const key in bodies) {
-          if (Object.prototype.hasOwnProperty.call(bodies, key)) {
-            const body = bodies[key];
-            if (body) {
-              world.removeRigidBody(body);
+        resetWorld();
+      }
 
-              Ammo.destroy(body.getMotionState());
-              Ammo.destroy(body.getCollisionShape());
-              Ammo.destroy(body);
-
-              delete bodies[key];
-            }
-          }
-        }
-        bodies = {};
-
-        for (const key in rays) {
-          if (Object.prototype.hasOwnProperty.call(rays, key)) {
-            const ray = rays[key];
-            if (ray) {
-              Ammo.destroy(ray);
-              delete rays[key];
-            }
-          }
-        }
-        rays = {};
+      toggleAutoReset({ toggle }) {
+        autoReset = Cast.toBoolean(toggle);
       }
 
       step() {
@@ -1547,11 +1613,7 @@
         if (runtime.frameLoop.framerate === 0) {
           world.stepSimulation(deltaTime, maxSubSteps);
         } else {
-          world.stepSimulation(
-            deltaTime,
-            maxSubSteps,
-            1 / runtime.frameLoop.framerate
-          );
+          world.stepSimulation(deltaTime, maxSubSteps, 1 / runtime.frameLoop.framerate);
         }
 
         const dispatcher = world.getDispatcher();
@@ -1559,14 +1621,8 @@
 
         for (let i = 0; i < numManifolds; i++) {
           const contactManifold = dispatcher.getManifoldByIndexInternal(i);
-          const body0 = Ammo.castObject(
-            contactManifold.getBody0(),
-            Ammo.btRigidBody
-          );
-          const body1 = Ammo.castObject(
-            contactManifold.getBody1(),
-            Ammo.btRigidBody
-          );
+          const body0 = Ammo.castObject(contactManifold.getBody0(), Ammo.btRigidBody);
+          const body1 = Ammo.castObject(contactManifold.getBody1(), Ammo.btRigidBody);
 
           if (contactManifold.getNumContacts() > 0) {
             const name0 = body0.userData;
@@ -1579,7 +1635,7 @@
         }
       }
 
-      stepWith({dt, maxSubSteps, fixedTimeStep}) {
+      stepWith({ dt, maxSubSteps, fixedTimeStep }) {
         for (const key in bodies) {
           bodies[key].collisions = [];
         }
@@ -1603,14 +1659,8 @@
 
         for (let i = 0; i < numManifolds; i++) {
           const contactManifold = dispatcher.getManifoldByIndexInternal(i);
-          const body0 = Ammo.castObject(
-            contactManifold.getBody0(),
-            Ammo.btRigidBody
-          );
-          const body1 = Ammo.castObject(
-            contactManifold.getBody1(),
-            Ammo.btRigidBody
-          );
+          const body0 = Ammo.castObject(contactManifold.getBody0(), Ammo.btRigidBody);
+          const body1 = Ammo.castObject(contactManifold.getBody1(), Ammo.btRigidBody);
 
           if (contactManifold.getNumContacts() > 0) {
             const name0 = body0.userData;
@@ -1631,7 +1681,7 @@
         world.setGravity(new Ammo.btVector3(x, y, z));
       }
 
-      getGravity({xyz}) {
+      getGravity({ xyz }) {
         return world.getGravity()[xyz]();
       }
 
@@ -1712,7 +1762,7 @@
           transform.setOrigin(new Ammo.btVector3(0, 0, 0));
 
           const motionState = new Ammo.btDefaultMotionState(transform);
-          const rbInfo = new Ammo.btRigidBodyConstructionInfo( mass, motionState, shape, localInertia);
+          const rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, motionState, shape, localInertia);
           const body = new Ammo.btRigidBody(rbInfo);
           body.userData = name;
           world.addRigidBody(body);
@@ -1806,7 +1856,7 @@
             delete bodies[name];
           }
         }
-        
+
         if (!target.lookupVariableByNameAndType(obj, "list")) {
           console.warn(`Attempted to create OBJ body from nonexistent list "${obj}"`);
           return;
@@ -1827,7 +1877,7 @@
           transform.setOrigin(new Ammo.btVector3(0, 0, 0));
 
           const motionState = new Ammo.btDefaultMotionState(transform);
-          const rbInfo = new Ammo.btRigidBodyConstructionInfo( mass, motionState, shape, localInertia);
+          const rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, motionState, shape, localInertia);
           const body = new Ammo.btRigidBody(rbInfo);
           body.userData = name;
           world.addRigidBody(body);
@@ -2001,7 +2051,7 @@
           console.warn(`Attempted to set gravity of nonexistent body "${body}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`);
         }
       }
-      
+
       bodyActive({ name }, { target }) {
         if (bodies[Cast.toString(name)]) {
           return bodies[Cast.toString(name)].isActive();
@@ -2374,7 +2424,7 @@
     }
     Scratch.extensions.register(new AmmoPhysics());
   })
-  .catch((error) => {
-    console.error("Ammo.js physics failed to initialize: ", error);
-  });
+    .catch((error) => {
+      console.error("Ammo.js physics failed to initialize: ", error);
+    });
 })(Scratch);
