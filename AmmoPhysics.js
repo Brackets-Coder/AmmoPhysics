@@ -21,6 +21,9 @@
   const Ammo = await Scratch.external.evalAndReturn("https://raw.githubusercontent.com/Brackets-Coder/AmmoPhysics/a363738e17bcb3d197950286e8e92a3c12da5283/dependencies/ammo.min.js", "Ammo");
   const Quaternion = await Scratch.external.evalAndReturn('https://raw.githubusercontent.com/Brackets-Coder/AmmoPhysics/a363738e17bcb3d197950286e8e92a3c12da5283/dependencies/quaternion.min.js', "Quaternion");
 
+  const radToDeg = 180 / Math.PI;
+  const degToRad = Math.PI / 180;
+
   Ammo().then(function (Ammo) {
 
     const Cast = Scratch.Cast;
@@ -29,17 +32,17 @@
       const quaternion = new Quaternion(q.w(), q.x(), q.y(), q.z());
       const euler = quaternion.toEuler("XYZ");
       return {
-        x: euler[0] * (180 / Math.PI),
-        y: euler[1] * (180 / Math.PI),
-        z: euler[2] * (180 / Math.PI),
+        x: euler[0] * radToDeg,
+        y: euler[1] * radToDeg,
+        z: euler[2] * radToDeg,
       };
     }
 
     function eulerToQuaternion(x, y, z) {
       let quaternion = Quaternion.fromEuler(
-        x * (Math.PI / 180),
-        y * (Math.PI / 180),
-        z * (Math.PI / 180),
+        x * degToRad,
+        y * degToRad,
+        z * degToRad,
         "XYZ"
       );
       return {
@@ -189,32 +192,37 @@
     function resetWorld() {
       world.setGravity(new Ammo.btVector3(0, -9.81, 0));
       for (const key in bodies) {
-        if (Object.prototype.hasOwnProperty.call(bodies, key)) {
-          const body = bodies[key];
-          if (body) {
-            world.removeRigidBody(body);
-            if (body.getMotionState()) Ammo.destroy(body.getMotionState());
-            if (body.getCollisionShape())
-              Ammo.destroy(body.getCollisionShape());
-            Ammo.destroy(body);
+        const body = bodies[key];
+        if (!body) continue;
 
-            delete bodies[key];
-          }
-        }
+        world.removeRigidBody(body);
+        if (body.getMotionState()) Ammo.destroy(body.getMotionState());
+        if (body.getCollisionShape())
+          Ammo.destroy(body.getCollisionShape());
+        Ammo.destroy(body);
+
+        delete bodies[key];
       }
-      bodies = {};
+      bodies = Object.create(null);
 
       for (const key in rays) {
-        if (Object.prototype.hasOwnProperty.call(rays, key)) {
-          const ray = rays[key];
-          if (ray) {
-            if (ray.endpoint) Ammo.destroy(ray.endpoint);
-            Ammo.destroy(ray);
-            delete rays[key];
-          }
-        }
+        const ray = rays[key];
+        if (!ray) continue;
+
+        if (ray.endpoint) Ammo.destroy(ray.endpoint);
+        Ammo.destroy(ray);
+        delete rays[key];
       }
-      rays = {};
+      rays = Object.create(null);
+
+      for (const key in compoundShapes) {
+        const shape = compoundShapes[key];
+        if (!shape) continue;
+
+        Ammo.destroy(shape);
+        delete compoundShapes[key];
+      }
+      compoundShapes = Object.create(null);
     }
 
     let collisionConfig = new Ammo.btDefaultCollisionConfiguration();
@@ -226,9 +234,9 @@
     let maxSubSteps = 10;
     world.setGravity(new Ammo.btVector3(0, -9.81, 0));
 
-    let bodies = {};
-    let compoundShapes = {};
-    let rays = {};
+    let bodies = Object.create(null);
+    let compoundShapes = Object.create(null);
+    let rays = Object.create(null);
 
     const vm = Scratch.vm;
     const runtime = vm.runtime;
@@ -252,6 +260,10 @@
     let autoReset = true;
 
     runtime.on("PROJECT_START", () => {
+      if (autoReset) resetWorld();
+    });
+
+    runtime.on("PROJECT_STOP_ALL", () => {
       if (autoReset) resetWorld();
     });
 
@@ -279,7 +291,7 @@
           forces: false,
         }
 
-        this.reset = () => {
+        this.refreshPalette = () => {
           if (Scratch.vm.extensionManager)
             Scratch.vm.extensionManager.refreshBlocks();
         }
@@ -942,6 +954,18 @@
               hideFromPalette: !this.folders.bodies,
             },
             {
+              opcode: "activateBody",
+              blockType: Scratch.BlockType.COMMAND,
+              text: Scratch.translate("activate body [name]"),
+              hideFromPalette: !this.folders.bodies,
+              arguments: {
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: "body",
+                },
+              },
+            },
+            {
               opcode: "deleteBody",
               text: Scratch.translate("delete body [name]"),
               hideFromPalette: !this.folders.bodies,
@@ -1547,32 +1571,32 @@
 
       toggleSimControl() {
         this.folders.simControl = !this.folders.simControl;
-        this.reset();
+        this.refreshPalette();
       }
 
       toggleBodies() {
         this.folders.bodies = !this.folders.bodies;
-        this.reset();
+        this.refreshPalette();
       }
 
       toggleTransformations() {
         this.folders.transformations = !this.folders.transformations;
-        this.reset();
+        this.refreshPalette();
       }
 
       toggleCollisions() {
         this.folders.collisions = !this.folders.collisions;
-        this.reset();
+        this.refreshPalette();
       }
 
       toggleRaycasting() {
         this.folders.raycasting = !this.folders.raycasting;
-        this.reset();
+        this.refreshPalette();
       }
 
       toggleForces() {
         this.folders.forces = !this.folders.forces;
-        this.reset();
+        this.refreshPalette();
       }
 
       //* From Simple3D extension
@@ -2066,6 +2090,15 @@
           if (bodies[key]?.isActive()) return true;
         }
         return false;
+      }
+
+      activateBody({ name }, { target }) {
+        name = Cast.toString(name);
+        if (bodies[name]) {
+          bodies[name].activate(true);
+        } else {
+          console.warn(`Attempted to activate nonexistent body "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`);
+        }
       }
 
       deleteBody({ name }, { target }) {
