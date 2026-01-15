@@ -23,8 +23,7 @@
 
   const radToDeg = 180 / Math.PI;
   const degToRad = Math.PI / 180;
-  
-  // @ts-ignore
+
   Ammo().then(function (Ammo) {
 
     console.log(Ammo);
@@ -32,7 +31,6 @@
     const Cast = Scratch.Cast;
 
     function quaternionToEuler(q) {
-      // @ts-ignore
       const quaternion = new Quaternion(q.w(), q.x(), q.y(), q.z());
       const euler = quaternion.toEuler("XYZ");
       return {
@@ -43,7 +41,6 @@
     }
 
     function eulerToQuaternion(x, y, z) {
-      // @ts-ignore
       let quaternion = Quaternion.fromEuler(
         x * degToRad,
         y * degToRad,
@@ -94,7 +91,6 @@
     }
 
     function addCompoundShape(name, shape, x1, y1, z1, x2, y2, z2) {
-      name = Cast.toString(name);
       const transform = new Ammo.btTransform();
       transform.setIdentity();
       transform.setOrigin(
@@ -1806,10 +1802,15 @@
       }
 
       setGravity({ x, y, z }) {
-        world.setGravity(new Ammo.btVector3(x, y, z));
+        world.setGravity(new Ammo.btVector3(
+          Cast.toNumber(x), 
+          Cast.toNumber(y), 
+          Cast.toNumber(z)
+        ));
       }
 
       getGravity({ xyz }) {
+        xyz = Cast.toString(xyz);
         return world.getGravity()[xyz]();
       }
 
@@ -1823,35 +1824,53 @@
 
       createBoxBody({ name, mass, x, y, z }) {
         createShapeBody(
-          new Ammo.btBoxShape(new Ammo.btVector3(x / 2, y / 2, z / 2)),
+          new Ammo.btBoxShape(new Ammo.btVector3(
+            Cast.toNumber(x) / 2, 
+            Cast.toNumber(y) / 2, 
+            Cast.toNumber(z) / 2
+          )),
           mass,
           name
         );
       }
 
       createSphereBody({ name, mass, radius }) {
-        createShapeBody(new Ammo.btSphereShape(radius), mass, name);
+        createShapeBody(
+          new Ammo.btSphereShape(Cast.toNumber(radius)), 
+          Cast.toNumber(mass), 
+          Cast.toString(name)
+        );
       }
 
       createCylinderBody({ name, mass, radius, height }) {
         createShapeBody(
           new Ammo.btCylinderShape(
-            new Ammo.btVector3(radius, height / 2, radius)
+            new Ammo.btVector3(Cast.toNumber(radius), 
+            Cast.toNumber(height) / 2, 
+            Cast.toNumber(radius))
           ),
-          mass,
-          name
+          Cast.toNumber(mass),
+          Cast.toString(name)
         );
       }
 
       createConeBody({ name, mass, radius, height }) {
-        createShapeBody(new Ammo.btConeShape(radius, height), mass, name);
+        createShapeBody(
+          new Ammo.btConeShape(Cast.toNumber(radius), 
+          Cast.toNumber(height)), 
+          Cast.toNumber(mass), 
+          Cast.toString(name)
+        );
       }
 
       createCapsuleBody({ name, mass, radius, height }) {
         createShapeBody(
-          new Ammo.btCapsuleShape(radius, height + 2 * radius),
-          mass,
-          name
+          new Ammo.btCapsuleShape(
+            Cast.toNumber(radius), 
+            Cast.toNumber(height + 2 * radius)
+          ),
+          Cast.toNumber(mass),
+          Cast.toString(name),
         );
       }
 
@@ -2082,45 +2101,66 @@
         compoundShapes[name] = new Ammo.btCompoundShape();
       }
 
+      //* The casting for the position/rotation offsets is done in the addCompoundShape function
       compBodyAddBox({ x, y, z, name, x1, y1, z1, x2, y2, z2 }, { target }) {
+        name = Cast.toString(name);
         if (compoundShapes[name]) {
-          addCompoundShape(name, new Ammo.btBoxShape(new Ammo.btVector3(x / 2, y / 2, z / 2)), x1, y1, z1, x2, y2, z2);
+          addCompoundShape(name, new Ammo.btBoxShape(new Ammo.btVector3(
+            Cast.toNumber(x) / 2, 
+            Cast.toNumber(y) / 2, 
+            Cast.toNumber(z) / 2
+          )), x1, y1, z1, x2, y2, z2);
         } else {
           shapeWarning(target, name);
         }
       }
 
       compBodyAddSphere({ radius, name, x1, y1, z1, x2, y2, z2 }, { target }) {
+        name = Cast.toString(name);
         if (compoundShapes[name]) {
-          addCompoundShape(name, new Ammo.btSphereShape(radius), x1, y1, z1, x2, y2, z2);
+          addCompoundShape(name, new Ammo.btSphereShape(Cast.toNumber(radius)), x1, y1, z1, x2, y2, z2);
         } else {
           shapeWarning(target, name);
         }
       }
 
       compBodyAddCylinder({ radius, height, name, x1, y1, z1, x2, y2, z2 }, { target }) {
+        name = Cast.toString(name);
         if (compoundShapes[name]) {
-          addCompoundShape(name, new Ammo.btCylinderShape(new Ammo.btVector3(radius, height / 2, radius)), x1, y1, z1, x2, y2, z2);
+          addCompoundShape(name, new Ammo.btCylinderShape(new Ammo.btVector3(
+            Cast.toNumber(radius), 
+            Cast.toNumber(height / 2), 
+            Cast.toNumber(radius)
+          )), x1, y1, z1, x2, y2, z2);
         } else {
           shapeWarning(target, name);
         }
       }
 
       compBodyAddCone({ radius, height, name, x1, y1, z1, x2, y2, z2 }, { target }) {
+        name = Cast.toString(name);
         if (compoundShapes[name]) {
-          addCompoundShape(name, new Ammo.btConeShape(radius, height), x1, y1, z1, x2, y2, z2);
+          addCompoundShape(name, new Ammo.btConeShape(
+            Cast.toNumber(radius), 
+            Cast.toNumber(height)
+          ), x1, y1, z1, x2, y2, z2);
         } else {
           shapeWarning(target, name);
         }
       }
 
       compBodyAddCapsule({ radius, height, name, x1, y1, z1, x2, y2, z2 }, { target }) {
+        name = Cast.toString(name);
         if (compoundShapes[name]) {
-          addCompoundShape(name, new Ammo.btCapsuleShape(radius, height + 2 * radius), x1, y1, z1, x2, y2, z2);
+          addCompoundShape(name, new Ammo.btCapsuleShape(
+            Cast.toNumber(radius), 
+            Cast.toNumber(height + 2 * radius)
+          ), x1, y1, z1, x2, y2, z2);
         } else {
           shapeWarning(target, name);
         }
       }
+      // TODO: =-=-=-=-=-=-=-=
 
       //* Compound bodies technically support meshes via btGImpactCompoundShape but I haven't added this
 
@@ -2353,6 +2393,7 @@
 
       bodyTransformation({ xyz, transform, name }, { target }) {
         name = Cast.toString(name);
+        xyz = Cast.toString(xyz);
         if (bodies[name]) {
           const newTransform = new Ammo.btTransform();
           bodies[name].getMotionState().getWorldTransform(newTransform);
@@ -2487,6 +2528,7 @@
 
       getRay({ xyz, property, name }, { target }) {
         name = Cast.toString(name);
+        xyz = Cast.toString(xyz);
         if (rays[name]) {
           const callback = rays[name];
           if (callback) {
