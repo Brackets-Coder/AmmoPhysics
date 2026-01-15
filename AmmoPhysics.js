@@ -23,12 +23,16 @@
 
   const radToDeg = 180 / Math.PI;
   const degToRad = Math.PI / 180;
-
+  
+  // @ts-ignore
   Ammo().then(function (Ammo) {
+
+    console.log(Ammo);
 
     const Cast = Scratch.Cast;
 
     function quaternionToEuler(q) {
+      // @ts-ignore
       const quaternion = new Quaternion(q.w(), q.x(), q.y(), q.z());
       const euler = quaternion.toEuler("XYZ");
       return {
@@ -39,6 +43,7 @@
     }
 
     function eulerToQuaternion(x, y, z) {
+      // @ts-ignore
       let quaternion = Quaternion.fromEuler(
         x * degToRad,
         y * degToRad,
@@ -281,7 +286,7 @@
 
     class AmmoPhysics {
 
-      constructor () {
+      constructor() {
         this.folders = {
           simControl: true, // folder open by default
           bodies: false,
@@ -293,7 +298,7 @@
 
         this.refreshPalette = () => {
           if (Scratch.vm.extensionManager)
-            Scratch.vm.extensionManager.refreshBlocks();
+            Scratch.vm.extensionManager.refreshBlocks("masterMathAmmoPhysics");
         }
       }
 
@@ -305,7 +310,7 @@
           blocks: [
             {
               blockType: Scratch.BlockType.BUTTON,
-              text: this.folders.simControl ? Scratch.translate("▼ Simulation Control") :  Scratch.translate("▶ Simulation Control"),
+              text: this.folders.simControl ? Scratch.translate("▼ Simulation Control") : Scratch.translate("▶ Simulation Control"),
               func: "toggleSimControl"
             },
             {
@@ -912,6 +917,82 @@
               },
             },
             {
+              opcode: "setFactor",
+              blockType: Scratch.BlockType.COMMAND,
+              text: Scratch.translate("set [factor] factor of body [name] to x: [x] y: [y] z: [z]"),
+              hideFromPalette: !this.folders.bodies,
+              arguments: {
+                factor: {
+                  type: Scratch.ArgumentType.STRING,
+                  menu: "factorsMenu",
+                },
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: "body",
+                },
+                x: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 1,
+                },
+                y: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 1,
+                },
+                z: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 1,
+                },
+              }
+            },
+            {
+              opcode: "setVelocity",
+              blockType: Scratch.BlockType.COMMAND,
+              text: Scratch.translate("set [linearAngular] velocity of body [name] to x: [x] y: [y] z: [z]"),
+              hideFromPalette: !this.folders.bodies,
+              arguments: {
+                linearAngular: {
+                  type: Scratch.ArgumentType.STRING,
+                  menu: "linearAngularMenu",
+                },
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: "body",
+                },
+                x: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 0,
+                },
+                y: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 0,
+                },
+                z: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 0,
+                },
+              }
+            },
+            {
+              opcode: "setDamping",
+              blockType: Scratch.BlockType.COMMAND,
+              text: Scratch.translate("set linear damping of body [name] to [linear] and angular damping to [angular]"),
+              hideFromPalette: !this.folders.bodies,
+              arguments: {
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: "body",
+                },
+                linear: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 0.01,
+                },
+                angular: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 0.01,
+                },
+              }
+            },
+            {
               opcode: "setBodyGravity",
               blockType: Scratch.BlockType.COMMAND,
               text: Scratch.translate("set gravity of [body] to x: [x] y: [y] z: [z]"),
@@ -936,6 +1017,18 @@
               },
             },
             {
+              opcode: "activateBody",
+              blockType: Scratch.BlockType.COMMAND,
+              text: Scratch.translate("activate body [name]"),
+              hideFromPalette: !this.folders.bodies,
+              arguments: {
+                name: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: "body",
+                },
+              }
+            },
+            {
               opcode: "bodyActive",
               blockType: Scratch.BlockType.BOOLEAN,
               text: Scratch.translate("is body [name] active?"),
@@ -952,18 +1045,6 @@
               blockType: Scratch.BlockType.BOOLEAN,
               text: Scratch.translate("is any body active?"),
               hideFromPalette: !this.folders.bodies,
-            },
-            {
-              opcode: "activateBody",
-              blockType: Scratch.BlockType.COMMAND,
-              text: Scratch.translate("activate body [name]"),
-              hideFromPalette: !this.folders.bodies,
-              arguments: {
-                name: {
-                  type: Scratch.ArgumentType.STRING,
-                  defaultValue: "body",
-                },
-              },
             },
             {
               opcode: "deleteBody",
@@ -1498,6 +1579,30 @@
                 },
               ],
             },
+            factorsMenu: {
+              items: [
+                {
+                  text: Scratch.translate("linear"),
+                  value: "setLinearFactor",
+                },
+                {
+                  text: Scratch.translate("angular"),
+                  value: "setAngularFactor",
+                },
+              ],
+            },
+            linearAngularMenu: {
+              items: [
+                {
+                  text: Scratch.translate("linear"),
+                  value: "setLinearVelocity",
+                },
+                {
+                  text: Scratch.translate("angular"),
+                  value: "setAngularVelocity",
+                },
+              ],
+            },
             rayMenu: {
               items: [
                 {
@@ -1664,10 +1769,10 @@
           bodies[key].collisions = [];
         }
 
-        if (!dt === 0 && !fixedTimeStep === 0) {
+        if (dt != 0 && fixedTimeStep != 0) {
           world.stepSimulation(dt, maxSubSteps, fixedTimeStep);
         } else {
-          if (!runtime.frameLoop.framerate === 0) {
+          if (runtime.frameLoop.framerate != 0) {
             world.stepSimulation(
               deltaTime,
               maxSubSteps,
@@ -1714,7 +1819,7 @@
       }
 
       allBodies() {
-        return Cast.toString(Object.keys(bodies));
+        return JSON.stringify(Object.keys(bodies));
       }
 
       createBoxBody({ name, mass, x, y, z }) {
@@ -2061,6 +2166,48 @@
         }
       }
 
+      setFactor({ factor, name, x, y, z }, { target }) {
+        name = Cast.toString(name);
+        if (bodies[name]) {
+          const factorVec = new Ammo.btVector3(
+            Cast.toNumber(x),
+            Cast.toNumber(y),
+            Cast.toNumber(z)
+          );
+          bodies[name][Cast.toString(factor)](factorVec);
+          Ammo.destroy(factorVec);
+        } else {
+          console.warn(`Attempted to set factor of nonexistent body "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`);
+        }
+      }
+
+      setDamping({ name, linear, angular }, { target }) {
+        name = Cast.toString(name);
+        if (bodies[name]) {
+          bodies[name].setDamping(Cast.toNumber(linear), Cast.toNumber(angular));
+        } else {
+          console.warn(`Attempted to set damping of nonexistent body "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`);
+        }
+      }
+
+      setVelocity({ linearAngular, name, x, y, z }, { target }) {
+        name = Cast.toString(name);
+        if (bodies[name]) {
+          const velocity = new Ammo.btVector3(
+            Cast.toNumber(x),
+            Cast.toNumber(y),
+            Cast.toNumber(z)
+          );
+
+          bodies[name].activate(true);
+          bodies[name][Cast.toString(linearAngular)](velocity);
+
+          Ammo.destroy(velocity);
+        } else {
+          console.warn(`Attempted to set velocity of nonexistent body "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`);
+        }
+      }
+
       setBodyGravity({ body, x, y, z }, { target }) {
         body = Cast.toString(body);
         if (bodies[body]) {
@@ -2073,6 +2220,15 @@
           Ammo.destroy(gravity);
         } else {
           console.warn(`Attempted to set gravity of nonexistent body "${body}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`);
+        }
+      }
+
+      activateBody({ name }, { target }) {
+        name = Cast.toString(name);
+        if (bodies[name]) {
+          bodies[name].activate(true);
+        } else {
+          console.warn(`Attempted to activate nonexistent body "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`);
         }
       }
 
@@ -2090,15 +2246,6 @@
           if (bodies[key]?.isActive()) return true;
         }
         return false;
-      }
-
-      activateBody({ name }, { target }) {
-        name = Cast.toString(name);
-        if (bodies[name]) {
-          bodies[name].activate(true);
-        } else {
-          console.warn(`Attempted to activate nonexistent body "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`);
-        }
       }
 
       deleteBody({ name }, { target }) {
@@ -2247,9 +2394,7 @@
       }
 
       bodyTouchingBody({ body, body2 }) {
-        return bodies[Cast.toString(body)]?.collisions.includes(
-          Cast.toString(body2)
-        );
+        return bodies[Cast.toString(body)]?.collisions.includes(Cast.toString(body2));
       }
 
       bodyTouchingAny({ body }) {
@@ -2369,10 +2514,7 @@
         if (rays[name]) {
           if (bodies[body]) {
             return bodies[body]?.includes(
-              Ammo.castObject(
-                rays[name]?.get_m_collisionObject(),
-                Ammo.btRigidBody
-              ).userData
+              Ammo.castObject(rays[name]?.get_m_collisionObject(), Ammo.btRigidBody).userData
             );
           } else {
             console.warn(`Attempted to detect if nonexistent body "${body}" was touching ray "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`);
