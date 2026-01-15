@@ -1395,7 +1395,6 @@
                 },
                 force: {
                   type: Scratch.ArgumentType.STRING,
-                  defaultValue: "force",
                   menu: "forceMenu",
                 },
                 x: {
