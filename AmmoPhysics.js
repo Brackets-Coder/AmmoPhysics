@@ -66,15 +66,7 @@
         mass = Cast.toNumber(mass);
         name = Cast.toString(name);
         if (bodies[name]) {
-          const body = bodies[name];
-          if (body) {
-            world.removeRigidBody(body);
-            world.removeCollisionObject(body);
-            Ammo.destroy(body.getMotionState());
-            Ammo.destroy(body.getCollisionShape());
-            Ammo.destroy(body);
-            delete bodies[name];
-          }
+          destroyBody(name);
         }
         const localInertia = new Ammo.btVector3(0, 0, 0);
         shape.calculateLocalInertia(mass, localInertia);
@@ -121,6 +113,80 @@
         transform.setRotation(quaternion);
 
         compoundShapes[name].addChildShape(transform, shape);
+      }
+
+      function warnMissingBody(target, action, name) {
+        console.warn(
+          `Attempted to ${action} nonexistent body "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`
+        );
+      }
+
+      function warnMissingConstraint(target, action, name) {
+        console.warn(
+          `Attempted to ${action} nonexistent constraint "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`
+        );
+      }
+
+      function createTransform(x, y, z, rx, ry, rz) {
+        const transform = new Ammo.btTransform();
+        transform.setIdentity();
+        transform.setOrigin(
+          new Ammo.btVector3(
+            Cast.toNumber(x),
+            Cast.toNumber(y),
+            Cast.toNumber(z)
+          )
+        );
+        const quaternion = eulerToQuaternion(
+          Cast.toNumber(rx),
+          Cast.toNumber(ry),
+          Cast.toNumber(rz)
+        );
+        transform.setRotation(
+          new Ammo.btQuaternion(
+            quaternion.x,
+            quaternion.y,
+            quaternion.z,
+            quaternion.w
+          )
+        );
+        return transform;
+      }
+
+      function destroyConstraint(name) {
+        name = Cast.toString(name);
+        const constraint = constraints[name];
+        if (!constraint) return false;
+        world.removeConstraint(constraint);
+        Ammo.destroy(constraint);
+        delete constraints[name];
+        delete constraintInfo[name];
+        return true;
+      }
+
+      function destroyConstraintsForBody(name) {
+        name = Cast.toString(name);
+        for (const constraintName in constraintInfo) {
+          const info = constraintInfo[constraintName];
+          if (info.bodyA === name || info.bodyB === name) {
+            destroyConstraint(constraintName);
+          }
+        }
+      }
+
+      function destroyBody(name) {
+        name = Cast.toString(name);
+        const body = bodies[name];
+        if (!body) return false;
+
+        destroyConstraintsForBody(name);
+        world.removeRigidBody(body);
+        world.removeCollisionObject(body);
+        if (body.getMotionState()) Ammo.destroy(body.getMotionState());
+        if (body.getCollisionShape()) Ammo.destroy(body.getCollisionShape());
+        Ammo.destroy(body);
+        delete bodies[name];
+        return true;
       }
 
       function shapeWarning(target, name) {
@@ -230,16 +296,14 @@
 
       function resetWorld() {
         world.setGravity(new Ammo.btVector3(0, -9.81, 0));
+        for (const key in constraints) {
+          destroyConstraint(key);
+        }
+        constraints = Object.create(null);
+        constraintInfo = Object.create(null);
+
         for (const key in bodies) {
-          const body = bodies[key];
-          if (!body) continue;
-
-          world.removeRigidBody(body);
-          if (body.getMotionState()) Ammo.destroy(body.getMotionState());
-          if (body.getCollisionShape()) Ammo.destroy(body.getCollisionShape());
-          Ammo.destroy(body);
-
-          delete bodies[key];
+          destroyBody(key);
         }
         bodies = Object.create(null);
 
@@ -278,6 +342,8 @@
       world.setGravity(new Ammo.btVector3(0, -9.81, 0));
 
       let bodies = Object.create(null);
+      let constraints = Object.create(null);
+      let constraintInfo = Object.create(null);
       let compoundShapes = Object.create(null);
       let rays = Object.create(null);
 
@@ -337,6 +403,7 @@
             bodies: false,
             transformations: false,
             collisions: false,
+            constraints: false,
             raycasting: false,
             forces: false,
           };
@@ -1330,6 +1397,427 @@
               },
               {
                 blockType: Scratch.BlockType.BUTTON,
+                text: this.folders.constraints
+                  ? Scratch.translate("▼ Constraints")
+                  : Scratch.translate("▶ Constraints"),
+                func: "toggleConstraints",
+              },
+              {
+                opcode: "allConstraints",
+                blockType: Scratch.BlockType.REPORTER,
+                text: Scratch.translate("all constraints"),
+                hideFromPalette: !this.folders.constraints,
+              },
+              {
+                opcode: "createPointConstraint",
+                blockType: Scratch.BlockType.COMMAND,
+                text: Scratch.translate(
+                  "create point constraint [name] between body [body] at x: [x] y: [y] z: [z] and body [body2] at x: [x2] y: [y2] z: [z2] with collisions [collisions]"
+                ),
+                hideFromPalette: !this.folders.constraints,
+                arguments: {
+                  name: {
+                    type: Scratch.ArgumentType.STRING,
+                    defaultValue: "constraint",
+                  },
+                  body: {
+                    type: Scratch.ArgumentType.STRING,
+                    defaultValue: "body",
+                  },
+                  x: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  y: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  z: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  body2: {
+                    type: Scratch.ArgumentType.STRING,
+                    defaultValue: Scratch.translate("body 2"),
+                  },
+                  x2: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  y2: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  z2: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  collisions: {
+                    type: Scratch.ArgumentType.STRING,
+                    menu: "toggleMenu",
+                    defaultValue: "disable",
+                  },
+                },
+              },
+              {
+                opcode: "createHingeConstraint",
+                blockType: Scratch.BlockType.COMMAND,
+                text: Scratch.translate(
+                  "create hinge constraint [name] between body [body] pivot x: [x] y: [y] z: [z] axis x: [ax] y: [ay] z: [az] and body [body2] pivot x: [x2] y: [y2] z: [z2] axis x: [ax2] y: [ay2] z: [az2] with collisions [collisions]"
+                ),
+                hideFromPalette: !this.folders.constraints,
+                arguments: {
+                  name: {
+                    type: Scratch.ArgumentType.STRING,
+                    defaultValue: "hinge",
+                  },
+                  body: {
+                    type: Scratch.ArgumentType.STRING,
+                    defaultValue: "body",
+                  },
+                  x: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  y: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  z: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  ax: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  ay: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 1,
+                  },
+                  az: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  body2: {
+                    type: Scratch.ArgumentType.STRING,
+                    defaultValue: Scratch.translate("body 2"),
+                  },
+                  x2: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  y2: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  z2: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  ax2: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  ay2: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 1,
+                  },
+                  az2: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  collisions: {
+                    type: Scratch.ArgumentType.STRING,
+                    menu: "toggleMenu",
+                    defaultValue: "disable",
+                  },
+                },
+              },
+              {
+                opcode: "createSliderConstraint",
+                blockType: Scratch.BlockType.COMMAND,
+                text: Scratch.translate(
+                  "create slider constraint [name] between body [body] frame x: [x] y: [y] z: [z] rotation x: [rx] y: [ry] z: [rz] and body [body2] frame x: [x2] y: [y2] z: [z2] rotation x: [rx2] y: [ry2] z: [rz2] with collisions [collisions]"
+                ),
+                hideFromPalette: !this.folders.constraints,
+                arguments: {
+                  name: {
+                    type: Scratch.ArgumentType.STRING,
+                    defaultValue: "slider",
+                  },
+                  body: {
+                    type: Scratch.ArgumentType.STRING,
+                    defaultValue: "body",
+                  },
+                  x: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  y: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  z: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  rx: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  ry: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  rz: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  body2: {
+                    type: Scratch.ArgumentType.STRING,
+                    defaultValue: Scratch.translate("body 2"),
+                  },
+                  x2: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  y2: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  z2: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  rx2: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  ry2: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  rz2: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  collisions: {
+                    type: Scratch.ArgumentType.STRING,
+                    menu: "toggleMenu",
+                    defaultValue: "disable",
+                  },
+                },
+              },
+              {
+                opcode: "createFixedConstraint",
+                blockType: Scratch.BlockType.COMMAND,
+                text: Scratch.translate(
+                  "create fixed constraint [name] between body [body] frame x: [x] y: [y] z: [z] rotation x: [rx] y: [ry] z: [rz] and body [body2] frame x: [x2] y: [y2] z: [z2] rotation x: [rx2] y: [ry2] z: [rz2] with collisions [collisions]"
+                ),
+                hideFromPalette: !this.folders.constraints,
+                arguments: {
+                  name: {
+                    type: Scratch.ArgumentType.STRING,
+                    defaultValue: "fixed",
+                  },
+                  body: {
+                    type: Scratch.ArgumentType.STRING,
+                    defaultValue: "body",
+                  },
+                  x: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  y: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  z: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  rx: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  ry: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  rz: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  body2: {
+                    type: Scratch.ArgumentType.STRING,
+                    defaultValue: Scratch.translate("body 2"),
+                  },
+                  x2: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  y2: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  z2: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  rx2: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  ry2: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  rz2: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  collisions: {
+                    type: Scratch.ArgumentType.STRING,
+                    menu: "toggleMenu",
+                    defaultValue: "disable",
+                  },
+                },
+              },
+              {
+                opcode: "setHingeLimit",
+                blockType: Scratch.BlockType.COMMAND,
+                text: Scratch.translate(
+                  "set hinge constraint [name] lower limit [lower] upper limit [upper] degrees"
+                ),
+                hideFromPalette: !this.folders.constraints,
+                arguments: {
+                  name: {
+                    type: Scratch.ArgumentType.STRING,
+                    defaultValue: "hinge",
+                  },
+                  lower: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: -90,
+                  },
+                  upper: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 90,
+                  },
+                },
+              },
+              {
+                opcode: "setHingeMotor",
+                blockType: Scratch.BlockType.COMMAND,
+                text: Scratch.translate(
+                  "[toggle] hinge motor for constraint [name] target velocity [velocity] max impulse [impulse]"
+                ),
+                hideFromPalette: !this.folders.constraints,
+                arguments: {
+                  toggle: {
+                    type: Scratch.ArgumentType.STRING,
+                    menu: "toggleMenu",
+                  },
+                  name: {
+                    type: Scratch.ArgumentType.STRING,
+                    defaultValue: "hinge",
+                  },
+                  velocity: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 1,
+                  },
+                  impulse: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 1,
+                  },
+                },
+              },
+              {
+                opcode: "setSliderLimits",
+                blockType: Scratch.BlockType.COMMAND,
+                text: Scratch.translate(
+                  "set slider constraint [name] linear limits [lower] to [upper] angular limits [angularLower] to [angularUpper] degrees"
+                ),
+                hideFromPalette: !this.folders.constraints,
+                arguments: {
+                  name: {
+                    type: Scratch.ArgumentType.STRING,
+                    defaultValue: "slider",
+                  },
+                  lower: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: -1,
+                  },
+                  upper: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 1,
+                  },
+                  angularLower: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                  angularUpper: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 0,
+                  },
+                },
+              },
+              {
+                opcode: "setSliderMotor",
+                blockType: Scratch.BlockType.COMMAND,
+                text: Scratch.translate(
+                  "[toggle] slider motor for constraint [name] target velocity [velocity] max force [force]"
+                ),
+                hideFromPalette: !this.folders.constraints,
+                arguments: {
+                  toggle: {
+                    type: Scratch.ArgumentType.STRING,
+                    menu: "toggleMenu",
+                  },
+                  name: {
+                    type: Scratch.ArgumentType.STRING,
+                    defaultValue: "slider",
+                  },
+                  velocity: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 1,
+                  },
+                  force: {
+                    type: Scratch.ArgumentType.NUMBER,
+                    defaultValue: 1,
+                  },
+                },
+              },
+              {
+                opcode: "getConstraintProperty",
+                blockType: Scratch.BlockType.REPORTER,
+                text: Scratch.translate("[property] of constraint [name]"),
+                hideFromPalette: !this.folders.constraints,
+                arguments: {
+                  property: {
+                    type: Scratch.ArgumentType.STRING,
+                    menu: "constraintPropertyMenu",
+                  },
+                  name: {
+                    type: Scratch.ArgumentType.STRING,
+                    defaultValue: "constraint",
+                  },
+                },
+              },
+              {
+                opcode: "deleteConstraint",
+                blockType: Scratch.BlockType.COMMAND,
+                text: Scratch.translate("delete constraint [name]"),
+                hideFromPalette: !this.folders.constraints,
+                arguments: {
+                  name: {
+                    type: Scratch.ArgumentType.STRING,
+                    defaultValue: "constraint",
+                  },
+                },
+              },
+              {
+                blockType: Scratch.BlockType.BUTTON,
                 text: this.folders.raycasting
                   ? Scratch.translate("▼ Raycasting")
                   : Scratch.translate("▶ Raycasting"),
@@ -1764,6 +2252,38 @@
                   },
                 ],
               },
+              constraintPropertyMenu: {
+                items: [
+                  {
+                    text: Scratch.translate("type"),
+                    value: "type",
+                  },
+                  {
+                    text: Scratch.translate("body A"),
+                    value: "bodyA",
+                  },
+                  {
+                    text: Scratch.translate("body B"),
+                    value: "bodyB",
+                  },
+                  {
+                    text: Scratch.translate("hinge angle"),
+                    value: "hingeAngle",
+                  },
+                  {
+                    text: Scratch.translate("slider position"),
+                    value: "sliderPosition",
+                  },
+                  {
+                    text: Scratch.translate("slider angle"),
+                    value: "sliderAngle",
+                  },
+                  {
+                    text: Scratch.translate("breaking impulse threshold"),
+                    value: "breakingImpulseThreshold",
+                  },
+                ],
+              },
               toggleMenu: {
                 items: [
                   {
@@ -1840,6 +2360,11 @@
 
         toggleCollisions() {
           this.folders.collisions = !this.folders.collisions;
+          this.refreshPalette();
+        }
+
+        toggleConstraints() {
+          this.folders.constraints = !this.folders.constraints;
           this.refreshPalette();
         }
 
@@ -2053,15 +2578,7 @@
           name = Cast.toString(name);
           mass = Cast.toNumber(mass);
           if (bodies[name]) {
-            const body = bodies[name];
-            if (body) {
-              world.removeRigidBody(body);
-              world.removeCollisionObject(body);
-              Ammo.destroy(body.getMotionState());
-              Ammo.destroy(body.getCollisionShape());
-              Ammo.destroy(body);
-              delete bodies[name];
-            }
+            destroyBody(name);
           }
 
           let list;
@@ -2112,15 +2629,7 @@
           mass = Cast.toNumber(mass);
 
           if (bodies[name]) {
-            const body = bodies[name];
-            if (body) {
-              world.removeRigidBody(body);
-              world.removeCollisionObject(body);
-              Ammo.destroy(body.getMotionState());
-              Ammo.destroy(body.getCollisionShape());
-              Ammo.destroy(body);
-              delete bodies[name];
-            }
+            destroyBody(name);
           }
           // get the vertices from the list
           const points = processVertices(
@@ -2188,15 +2697,7 @@
           mass = Cast.toNumber(mass);
 
           if (bodies[name]) {
-            const body = bodies[name];
-            if (body) {
-              world.removeRigidBody(body);
-              world.removeCollisionObject(body);
-              Ammo.destroy(body.getMotionState());
-              Ammo.destroy(body.getCollisionShape());
-              Ammo.destroy(body);
-              delete bodies[name];
-            }
+            destroyBody(name);
           }
 
           if (!target.lookupVariableByNameAndType(obj, "list")) {
@@ -2292,19 +2793,11 @@
         createCompoundShape(name) {
           name = Cast.toString(name);
           if (compoundShapes[name]) {
-            Ammo.destory(compoundShapes[name]);
+            Ammo.destroy(compoundShapes[name]);
             delete compoundShapes[name];
           }
           if (bodies[name]) {
-            const body = bodies[name];
-            if (body) {
-              world.removeRigidBody(body);
-              world.removeCollisionObject(body);
-              Ammo.destroy(body.getMotionState());
-              Ammo.destroy(body.getCollisionShape());
-              Ammo.destroy(body);
-              delete bodies[name];
-            }
+            destroyBody(name);
           }
           compoundShapes[name] = new Ammo.btCompoundShape();
         }
@@ -2589,17 +3082,7 @@
 
         deleteBody({ name }, { target }) {
           name = Cast.toString(name);
-          if (bodies[name]) {
-            const body = bodies[name];
-            if (body) {
-              world.removeRigidBody(body);
-              world.removeCollisionObject(body);
-              Ammo.destroy(body.getMotionState());
-              Ammo.destroy(body.getCollisionShape());
-              Ammo.destroy(body);
-              delete bodies[name];
-            }
-          } else {
+          if (!destroyBody(name)) {
             console.warn(
               `Attempted to delete nonexistent body "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`
             );
@@ -2689,7 +3172,7 @@
             bodies[name].getMotionState().setWorldTransform(tempTransform);
 
             Ammo.destroy(tempTransform);
-            Ammo.destory(newPos);
+            Ammo.destroy(newPos);
           } else {
             console.warn(
               `Attempted to change transformation of nonexistent body "${name}" in ${target.isStage ? "Stage" : 'Sprite "' + target.sprite.name}"`
@@ -2755,6 +3238,288 @@
 
         allBodiesTouchingBody({ body }) {
           return JSON.stringify(bodies[Cast.toString(body)]?.collisions);
+        }
+
+        allConstraints() {
+          return JSON.stringify(Object.keys(constraints));
+        }
+
+        createPointConstraint(
+          { name, body, body2, x, y, z, x2, y2, z2, collisions },
+          { target }
+        ) {
+          name = Cast.toString(name);
+          body = Cast.toString(body);
+          body2 = Cast.toString(body2);
+          if (!bodies[body]) {
+            warnMissingBody(target, "create constraint on", body);
+            return;
+          }
+          if (!bodies[body2]) {
+            warnMissingBody(target, "create constraint on", body2);
+            return;
+          }
+
+          destroyConstraint(name);
+          const pivotA = new Ammo.btVector3(
+            Cast.toNumber(x),
+            Cast.toNumber(y),
+            Cast.toNumber(z)
+          );
+          const pivotB = new Ammo.btVector3(
+            Cast.toNumber(x2),
+            Cast.toNumber(y2),
+            Cast.toNumber(z2)
+          );
+          const constraint = new Ammo.btPoint2PointConstraint(
+            bodies[body],
+            bodies[body2],
+            pivotA,
+            pivotB
+          );
+          world.addConstraint(
+            constraint,
+            Cast.toString(collisions) === "disable"
+          );
+          constraints[name] = constraint;
+          constraintInfo[name] = { type: "point", bodyA: body, bodyB: body2 };
+          bodies[body].activate(true);
+          bodies[body2].activate(true);
+          Ammo.destroy(pivotA);
+          Ammo.destroy(pivotB);
+        }
+
+        createHingeConstraint(
+          { name, body, body2, x, y, z, ax, ay, az, x2, y2, z2, ax2, ay2, az2, collisions },
+          { target }
+        ) {
+          name = Cast.toString(name);
+          body = Cast.toString(body);
+          body2 = Cast.toString(body2);
+          if (!bodies[body]) {
+            warnMissingBody(target, "create constraint on", body);
+            return;
+          }
+          if (!bodies[body2]) {
+            warnMissingBody(target, "create constraint on", body2);
+            return;
+          }
+
+          destroyConstraint(name);
+          const pivotA = new Ammo.btVector3(
+            Cast.toNumber(x),
+            Cast.toNumber(y),
+            Cast.toNumber(z)
+          );
+          const pivotB = new Ammo.btVector3(
+            Cast.toNumber(x2),
+            Cast.toNumber(y2),
+            Cast.toNumber(z2)
+          );
+          const axisA = new Ammo.btVector3(
+            Cast.toNumber(ax),
+            Cast.toNumber(ay),
+            Cast.toNumber(az)
+          );
+          const axisB = new Ammo.btVector3(
+            Cast.toNumber(ax2),
+            Cast.toNumber(ay2),
+            Cast.toNumber(az2)
+          );
+          const constraint = new Ammo.btHingeConstraint(
+            bodies[body],
+            bodies[body2],
+            pivotA,
+            pivotB,
+            axisA,
+            axisB
+          );
+          world.addConstraint(
+            constraint,
+            Cast.toString(collisions) === "disable"
+          );
+          constraints[name] = constraint;
+          constraintInfo[name] = { type: "hinge", bodyA: body, bodyB: body2 };
+          bodies[body].activate(true);
+          bodies[body2].activate(true);
+          Ammo.destroy(pivotA);
+          Ammo.destroy(pivotB);
+          Ammo.destroy(axisA);
+          Ammo.destroy(axisB);
+        }
+
+        createSliderConstraint(
+          { name, body, body2, x, y, z, rx, ry, rz, x2, y2, z2, rx2, ry2, rz2, collisions },
+          { target }
+        ) {
+          name = Cast.toString(name);
+          body = Cast.toString(body);
+          body2 = Cast.toString(body2);
+          if (!bodies[body]) {
+            warnMissingBody(target, "create constraint on", body);
+            return;
+          }
+          if (!bodies[body2]) {
+            warnMissingBody(target, "create constraint on", body2);
+            return;
+          }
+
+          destroyConstraint(name);
+          const frameA = createTransform(x, y, z, rx, ry, rz);
+          const frameB = createTransform(x2, y2, z2, rx2, ry2, rz2);
+          const constraint = new Ammo.btSliderConstraint(
+            bodies[body],
+            bodies[body2],
+            frameA,
+            frameB,
+            true
+          );
+          world.addConstraint(
+            constraint,
+            Cast.toString(collisions) === "disable"
+          );
+          constraints[name] = constraint;
+          constraintInfo[name] = { type: "slider", bodyA: body, bodyB: body2 };
+          bodies[body].activate(true);
+          bodies[body2].activate(true);
+          Ammo.destroy(frameA);
+          Ammo.destroy(frameB);
+        }
+
+        createFixedConstraint(
+          { name, body, body2, x, y, z, rx, ry, rz, x2, y2, z2, rx2, ry2, rz2, collisions },
+          { target }
+        ) {
+          name = Cast.toString(name);
+          body = Cast.toString(body);
+          body2 = Cast.toString(body2);
+          if (!bodies[body]) {
+            warnMissingBody(target, "create constraint on", body);
+            return;
+          }
+          if (!bodies[body2]) {
+            warnMissingBody(target, "create constraint on", body2);
+            return;
+          }
+
+          destroyConstraint(name);
+          const frameA = createTransform(x, y, z, rx, ry, rz);
+          const frameB = createTransform(x2, y2, z2, rx2, ry2, rz2);
+          const constraint = new Ammo.btFixedConstraint(
+            bodies[body],
+            bodies[body2],
+            frameA,
+            frameB
+          );
+          world.addConstraint(
+            constraint,
+            Cast.toString(collisions) === "disable"
+          );
+          constraints[name] = constraint;
+          constraintInfo[name] = { type: "fixed", bodyA: body, bodyB: body2 };
+          bodies[body].activate(true);
+          bodies[body2].activate(true);
+          Ammo.destroy(frameA);
+          Ammo.destroy(frameB);
+        }
+
+        setHingeLimit({ name, lower, upper }, { target }) {
+          name = Cast.toString(name);
+          const constraint = constraints[name];
+          if (constraintInfo[name]?.type === "hinge" && constraint?.setLimit) {
+            constraint.setLimit(
+              Cast.toNumber(lower) * degToRad,
+              Cast.toNumber(upper) * degToRad
+            );
+          } else {
+            warnMissingConstraint(target, "set hinge limits on", name);
+          }
+        }
+
+        setHingeMotor({ toggle, name, velocity, impulse }, { target }) {
+          name = Cast.toString(name);
+          const constraint = constraints[name];
+          if (
+            constraintInfo[name]?.type === "hinge" &&
+            constraint?.enableAngularMotor
+          ) {
+            constraint.enableAngularMotor(
+              Cast.toString(toggle) === "enable",
+              Cast.toNumber(velocity),
+              Cast.toNumber(impulse)
+            );
+          } else {
+            warnMissingConstraint(target, "set hinge motor on", name);
+          }
+        }
+
+        setSliderLimits(
+          { name, lower, upper, angularLower, angularUpper },
+          { target }
+        ) {
+          name = Cast.toString(name);
+          const constraint = constraints[name];
+          if (constraintInfo[name]?.type === "slider" && constraint) {
+            constraint.setLowerLinLimit(Cast.toNumber(lower));
+            constraint.setUpperLinLimit(Cast.toNumber(upper));
+            constraint.setLowerAngLimit(Cast.toNumber(angularLower) * degToRad);
+            constraint.setUpperAngLimit(Cast.toNumber(angularUpper) * degToRad);
+          } else {
+            warnMissingConstraint(target, "set slider limits on", name);
+          }
+        }
+
+        setSliderMotor({ toggle, name, velocity, force }, { target }) {
+          name = Cast.toString(name);
+          const constraint = constraints[name];
+          if (constraintInfo[name]?.type === "slider" && constraint) {
+            constraint.setPoweredLinMotor(Cast.toString(toggle) === "enable");
+            constraint.setTargetLinMotorVelocity(Cast.toNumber(velocity));
+            constraint.setMaxLinMotorForce(Cast.toNumber(force));
+          } else {
+            warnMissingConstraint(target, "set slider motor on", name);
+          }
+        }
+
+        getConstraintProperty({ property, name }, { target }) {
+          name = Cast.toString(name);
+          property = Cast.toString(property);
+          const constraint = constraints[name];
+          const info = constraintInfo[name];
+          if (!constraint || !info) {
+            warnMissingConstraint(target, "get property of", name);
+            return "";
+          }
+
+          switch (property) {
+            case "type":
+            case "bodyA":
+            case "bodyB":
+              return info[property];
+            case "hingeAngle":
+              return info.type === "hinge" && constraint.getHingeAngle
+                ? constraint.getHingeAngle() * radToDeg
+                : 0;
+            case "sliderPosition":
+              return info.type === "slider" && constraint.getLinearPos
+                ? constraint.getLinearPos()
+                : 0;
+            case "sliderAngle":
+              return info.type === "slider" && constraint.getAngularPos
+                ? constraint.getAngularPos() * radToDeg
+                : 0;
+            case "breakingImpulseThreshold":
+              return constraint.getBreakingImpulseThreshold
+                ? constraint.getBreakingImpulseThreshold()
+                : 0;
+          }
+          return "";
+        }
+
+        deleteConstraint({ name }, { target }) {
+          if (!destroyConstraint(name)) {
+            warnMissingConstraint(target, "delete", Cast.toString(name));
+          }
         }
 
         rayCast({ name, x, y, z, x2, y2, z2 }) {
